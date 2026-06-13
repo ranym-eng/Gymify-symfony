@@ -1,0 +1,420 @@
+{% extends 'sportif/base.html.twig' %}
+
+{% block title %}Team Event Details{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+{% endblock %}
+
+{% block body %}
+    <!-- Event Details Section -->
+    <section class="event-details-section">
+        <div class="container">
+            <!-- Centered Title -->
+            <div class="section-title">
+                <h2>Team Event Details</h2>
+                <p>Details about the event <strong>{{ equipe_event.event.nom }}</strong> and the team <strong>{{ equipe_event.equipe.nom }}</strong>.</p>
+            </div>
+
+            <!-- Back Button and Details Card -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="details-card">
+                        <!-- Back Button -->
+                        <div class="details-actions mb-4">
+                            <a href="{{ path('sportif_salle_details', {'id': equipe_event.event.salle.id}) }}" class="back-btn">
+                                <i class="fas fa-arrow-left me-2"></i> Back
+                            </a>
+                        </div>
+
+                        <!-- Event Image -->
+                        {% if equipe_event.event.imageUrl %}
+                            <div class="event-image-wrapper">
+                                <img src="{{ asset(equipe_event.event.imageUrl) }}" alt="{{ equipe_event.event.nom }}" class="event-image">
+                            </div>
+                        {% endif %}
+
+                        <!-- Event Details -->
+                        <div class="details-section">
+                            <h3>Event: {{ equipe_event.event.nom }}</h3>
+                            <ul class="details-list">
+                                <li>
+                                    <i class="fas fa-users icon"></i>
+                                    <strong>Team:</strong> {{ equipe_event.equipe.nom }}
+                                </li>
+                                <li>
+                                    <i class="fas fa-users icon"></i>
+                                    <strong>Number of Members:</strong> {{ equipe_event.equipe.nombreMembres }}
+                                </li>
+                                <li>
+                                    <i class="fas fa-info-circle icon"></i>
+                                    <strong>Description:</strong> {{ equipe_event.event.description|default('No description') }}
+                                </li>
+                                <li>
+                                    <i class="fas fa-calendar icon"></i>
+                                    <strong>Date:</strong> {{ equipe_event.event.date|date('d M Y') }}
+                                </li>
+                                <li>
+                                    <i class="fas fa-clock icon"></i>
+                                    <strong>Time:</strong> {{ equipe_event.event.heureDebut|date('H:i') }} - {{ equipe_event.event.heureFin|date('H:i') }}
+                                </li>
+                                <li>
+                                    <i class="fas fa-tag icon"></i>
+                                    <strong>Type:</strong> {{ equipe_event.event.type ? equipe_event.event.type.value|capitalize : 'Not defined' }}
+                                </li>
+                                <li>
+                                    <i class="fas fa-trophy icon reward-icon"></i>
+                                    <strong>Reward:</strong> {{ equipe_event.event.reward ? equipe_event.event.reward.label|capitalize : 'None' }}
+                                </li>
+                                <li>
+                                    <i class="fas fa-map-marker-alt icon"></i>
+                                    <strong>Location:</strong> {{ equipe_event.event.lieu|default('Not specified') }}
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Map for Event Location -->
+                        {% if equipe_event.event.latitude and equipe_event.event.longitude %}
+                            <div id="map" class="mt-4"></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        /* Global Styles */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        * {
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Event Details Section */
+        .event-details-section {
+            padding: 120px 0;
+            background: linear-gradient(135deg, #1e1e1e 0%, #34495e 100%);
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        /* Centered Title */
+        .section-title {
+            text-align: center;
+            margin-bottom: 70px;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        .section-title h2 {
+            font-size: 50px;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+            position: relative;
+            letter-spacing: 1.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 5px;
+            background: linear-gradient(90deg, #00d4ff, #007bff);
+            border-radius: 3px;
+        }
+
+        .section-title p {
+            font-size: 18px;
+            font-weight: 400;
+            color: #d1d1d1;
+            margin-top: 20px;
+            line-height: 1.8;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Details Card */
+        .details-card {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            backdrop-filter: blur(8px);
+            color: #1e1e1e;
+            position: relative;
+            animation: cardFadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Event Image */
+        .event-image-wrapper {
+            text-align: center;
+            margin-bottom: 40px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .event-image {
+            max-width: 100%;
+            max-height: 450px;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: transform 0.4s ease;
+        }
+
+        .event-image:hover {
+            transform: scale(1.05);
+        }
+
+        /* Details Section */
+        .details-section {
+            margin-bottom: 40px;
+        }
+
+        .details-section h3 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1e1e1e;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #00d4ff;
+            padding-bottom: 12px;
+        }
+
+        /* Details List with Enhanced Icons */
+        .details-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .details-list li {
+            font-size: 17px;
+            color: #555555;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            line-height: 1.7;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            animation: listItemFadeIn 0.8s ease-in-out;
+            animation-delay: calc(0.1s * var(--index));
+        }
+
+        .details-list li:hover {
+            background: rgba(0, 212, 255, 0.1);
+            color: #1e1e1e;
+            transform: translateX(5px);
+        }
+
+        .details-list li strong {
+            color: #1e1e1e;
+            font-weight: 600;
+        }
+
+        .details-list .icon {
+            color: #007bff;
+            font-size: 20px;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .details-list .reward-icon {
+            color: #FFD700; /* Gold for reward */
+            font-size: 20px;
+        }
+
+        .details-list li:hover .icon {
+            transform: scale(1.2);
+            color: #00d4ff;
+        }
+
+        .details-list li:hover .reward-icon {
+            transform: scale(1.2) rotate(10deg);
+            color: #FFC107; /* Slightly brighter gold on hover */
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1.2) rotate(10deg); }
+            50% { transform: scale(1.4) rotate(10deg); }
+            100% { transform: scale(1.2) rotate(10deg); }
+        }
+
+        @keyframes listItemFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Map Styling */
+        #map {
+            width: 100%;
+            height: 320px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Back Button */
+        .details-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            text-decoration: none;
+            background: linear-gradient(90deg, #00d4ff, #007bff);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+            transition: all 0.4s ease;
+        }
+
+        .back-btn:hover {
+            background: linear-gradient(90deg, #007bff, #00d4ff);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 123, 255, 0.6);
+        }
+
+        .back-btn i {
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .event-details-section {
+                padding: 80px 0;
+            }
+            .section-title h2 {
+                font-size: 38px;
+            }
+            .section-title p {
+                font-size: 16px;
+            }
+            .details-card {
+                padding: 30px;
+            }
+            .details-section h3 {
+                font-size: 24px;
+            }
+            .details-list li {
+                font-size: 15px;
+                padding: 8px 12px;
+            }
+            .details-list .icon, .details-list .reward-icon {
+                font-size: 18px;
+            }
+            .event-image {
+                max-height: 350px;
+            }
+            #map {
+                height: 280px;
+            }
+            .back-btn {
+                padding: 10px 25px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .event-details-section {
+                padding: 60px 0;
+            }
+            .section-title h2 {
+                font-size: 30px;
+            }
+            .section-title p {
+                font-size: 14px;
+            }
+            .details-card {
+                padding: 20px;
+            }
+            .details-section h3 {
+                font-size: 20px;
+            }
+            .details-list li {
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+            .details-list .icon, .details-list .reward-icon {
+                font-size: 16px;
+            }
+            .back-btn {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+            .details-actions {
+                justify-content: center;
+            }
+            .event-image {
+                max-height: 250px;
+            }
+            #map {
+                height: 220px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if equipe_event.event.latitude and equipe_event.event.longitude %}
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const latitude = {{ equipe_event.event.latitude|json_encode|raw }};
+                const longitude = {{ equipe_event.event.longitude|json_encode|raw }};
+                const lieu = {{ equipe_event.event.lieu|json_encode|raw }};
+
+                if (latitude && longitude) {
+                    const map = L.map('map').setView([latitude, longitude], 15);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                        maxZoom: 19
+                    }).addTo(map);
+
+                    L.marker([latitude, longitude])
+                        .addTo(map)
+                        .bindPopup(lieu || 'Event Location')
+                        .openPopup();
+
+                    // Ensure map renders correctly
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 100);
+                }
+            });
+        </script>
+    {% endif %}
+{% endblock %}

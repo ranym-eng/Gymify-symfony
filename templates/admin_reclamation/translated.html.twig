@@ -1,0 +1,20 @@
+{% extends 'admin/homepageadmin.html.twig' %}
+
+{% block title %}Translated Complaint #{{ reclamation.id }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h2 class="text-blue-600 mb-4">Translated Complaint #{{ reclamation.id }}</h2>
+    <div class="bg-white p-4 rounded-4 shadow-sm">
+        <h5>Original Subject</h5>
+        <p class="text-secondary">{{ reclamation.sujet }}</p>
+        <h5>Translated Subject ({{ target_lang|upper }})</h5>
+        <p class="text-secondary">{{ translated_sujet }}</p>
+        <h5>Original Description</h5>
+        <p class="text-secondary">{{ reclamation.description }}</p>
+        <h5>Translated Description ({{ target_lang|upper }})</h5>
+        <p class="text-secondary">{{ translated_description }}</p>
+        <a href="{{ path('app_admin_reclamation_index') }}" class="btn btn-blue-600 rounded-pill mt-3">Back to Complaints</a>
+    </div>
+</div>
+{% endblock %}

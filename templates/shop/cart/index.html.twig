@@ -1,0 +1,87 @@
+{% extends 'shop/base.html.twig' %}
+
+{% block title %}Mon panier{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Mon panier</h1>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% if items|length > 0 %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Produit</th>
+                            <th>Prix unitaire</th>
+                            <th>Quantité</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if item.product.imagePath %}
+                                            <img src="{{ asset('uploads/products/' ~ item.product.imagePath) }}" alt="{{ item.product.nomP }}" style="width: 50px; height: 50px; object-fit: cover;" class="me-3">
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0">{{ item.product.nomP }}</h6>
+                                            <small class="text-muted">{{ item.product.categorieP }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ item.product.prixP }} €</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.product.prixP * item.quantity }} €</td>
+                                <td>
+                                    <form action="{{ path('shop_cart_remove', {'id': item.product.idP}) }}" method="post" style="display: inline-block;">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-trash"></i> Retirer
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end"><strong>Total</strong></td>
+                            <td><strong>{{ total }} €</strong></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ path('shop_product_index') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Continuer mes achats
+                </a>
+                <form action="{{ path('shop_checkout') }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Passer la commande
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                Votre panier est vide.
+                <a href="{{ path('shop_product_index') }}" class="alert-link">Découvrir nos produits</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %} 

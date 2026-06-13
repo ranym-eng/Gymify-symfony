@@ -1,0 +1,387 @@
+{% extends 'admin/homepageadmin.html.twig' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+            <div>
+                <h3 class="fw-bold mb-3">{{ page_title }}</h3>
+                <h6 class="op-7 mb-2">Edit existing activity</h6>
+            </div>
+        </div>
+
+        <div class="card shadow-lg">
+            <div class="card-body p-4">
+                {{ form_start(form, {
+                    'attr': {
+                        'id': 'activityForm',
+                        'novalidate': 'novalidate',
+                        'enctype': 'multipart/form-data'
+                    }
+                }) }}
+
+                <!-- Activity Name -->
+                <div class="mb-4">
+                    {{ form_label(form.nom, null, {
+                        'label_attr': {'class': 'form-label fw-bold'}
+                    }) }}
+                    {{ form_widget(form.nom, {
+                        'attr': {
+                            'class': 'form-control',
+                            'data-maxlength': '50',
+                            'required': 'required',
+                            'aria-describedby': 'nameCounter'
+                        }
+                    }) }}
+                    {{ form_errors(form.nom) }}
+                    <div class="invalid-feedback" data-error="activity.name.blank">Please enter an activity name</div>
+                    <div class="invalid-feedback" data-error="activity.name.too_long">Name must be less than 50 characters</div>
+                    <small class="text-muted float-end"><span id="nameCounter">{{ activity.nom|length }}</span>/50</small>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="mb-4">
+                    {{ form_label(form.imageFile, null, {
+                        'label_attr': {'class': 'form-label fw-bold'}
+                    }) }}
+                    <div class="image-upload-container border rounded p-3">
+                        <div class="image-preview-container text-center mb-3" style="min-height: 200px;">
+                            {% if activity.url %}
+                                <img id="imagePreview" src="{{ asset(activity.url) }}" class="img-fluid rounded" style="max-height: 300px;">
+                                <div id="imagePlaceholder" class="d-none d-flex flex-column align-items-center justify-content-center h-100">
+                                    <i class="fas fa-image fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Drag & drop or click to upload</p>
+                                </div>
+                            {% else %}
+                                <img id="imagePreview" src="" class="img-fluid rounded d-none" style="max-height: 300px;">
+                                <div id="imagePlaceholder" class="d-flex flex-column align-items-center justify-content-center h-100">
+                                    <i class="fas fa-image fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Drag & drop or click to upload</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {{ form_widget(form.imageFile, {
+                            'attr': {
+                                'class': 'd-none',
+                                'accept': 'image/jpeg,image/png,image/webp',
+                                'required': activity.url ? null : 'required'
+                            }
+                        }) }}
+                        <button type="button" class="btn btn-primary w-100" id="uploadBtn">
+                            <i class="fas fa-cloud-upload-alt me-2"></i> {% if activity.url %}Change{% else %}Upload{% endif %} Image
+                        </button>
+                        {{ form_errors(form.imageFile) }}
+                        <div class="invalid-feedback mt-2" data-error="activity.image.required">Please select an image</div>
+                        <div class="invalid-feedback mt-2" data-error="activity.image.invalid_type">Only JPG, PNG or WEBP allowed</div>
+                        {% if activity.url %}
+                            <button type="button" class="btn btn-outline-danger w-100 mt-2" id="removeImageBtn">
+                                <i class="fas fa-trash-alt me-2"></i> Remove Image
+                            </button>
+                            <input type="hidden" name="remove_image" id="removeImageField" value="0">
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Activity Type -->
+                <div class="mb-4">
+                    <legend class="form-label fw-bold">Activity Type *</legend>
+                    <div class="row g-3">
+                        {% for child in form.type %}
+                            <div class="col-md-4">
+                                {{ form_widget(child, {
+                                    'attr': {
+                                        'class': 'btn-check',
+                                        'required': 'required'
+                                    }
+                                }) }}
+                                <label class="btn btn-outline-primary w-100 h-100 p-3 rounded d-flex flex-column align-items-center justify-content-center"
+                                       for="{{ child.vars.id }}"
+                                       aria-label="{{ child.vars.label }}">
+                                    <i class="fas 
+                                        {% if child.vars.value == 'PERSONAL_TRAINING' %}fa-user-tie
+                                        {% elseif child.vars.value == 'GROUP_ACTIVITY' %}fa-users
+                                        {% else %}fa-comments{% endif %} 
+                                        fa-2x mb-2"></i>
+                                    <span>{{ child.vars.label }}</span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {{ form_errors(form.type) }}
+                    <div class="invalid-feedback mt-2" data-error="activity.type.invalid">Please select a valid activity type</div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    {{ form_label(form.description, null, {
+                        'label_attr': {'class': 'form-label fw-bold'}
+                    }) }}
+                    {{ form_widget(form.description, {
+                        'attr': {
+                            'class': 'form-control',
+                            'rows': '4',
+                            'data-maxlength': '300',
+                            'required': 'required',
+                            'aria-describedby': 'descCounter'
+                        }
+                    }) }}
+                    {{ form_errors(form.description) }}
+                    <div class="invalid-feedback" data-error="activity.description.blank">Please enter a description</div>
+                    <div class="invalid-feedback" data-error="activity.description.too_long">Description must be less than 300 characters</div>
+                    <small class="text-muted float-end"><span id="descCounter">{{ activity.description|length }}</span>/300</small>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg py-3" id="submitBtn">
+                        <i class="fas fa-save me-2"></i> Update Activity
+                    </button>
+                    <a href="{{ path('app_activity_index') }}" class="btn btn-outline-secondary btn-lg py-3 mt-2">
+                        <i class="fas fa-times me-2"></i> Cancel
+                    </a>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .navbar-form.nav-search { display: none !important; }
+        .image-upload-container {
+            transition: border-color 0.3s;
+        }
+        .image-upload-container:hover {
+            border-color: #0d6efd !important;
+        }
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+        .btn-check:checked + label {
+            background-color: rgb(74, 136, 222) !important;
+            color: white;
+            border-color: rgb(23, 15, 140) !important;
+        }
+        #submitBtn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .invalid-feedback {
+            display: none;
+        }
+    </style>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('activityForm');
+        const imageInput = document.getElementById('{{ form.imageFile.vars.id }}');
+        const imagePreview = document.getElementById('imagePreview');
+        const imagePlaceholder = document.getElementById('imagePlaceholder');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const removeImageField = document.getElementById('removeImageField');
+        const nameCounter = document.getElementById('nameCounter');
+        const descCounter = document.getElementById('descCounter');
+        const nameInput = document.getElementById('{{ form.nom.vars.id }}');
+        const descInput = document.getElementById('{{ form.description.vars.id }}');
+
+        // Character counters
+        nameInput.addEventListener('input', function() {
+            nameCounter.textContent = this.value.length;
+        });
+
+        descInput.addEventListener('input', function() {
+            descCounter.textContent = this.value.length;
+        });
+
+        // Image upload handling
+        uploadBtn.addEventListener('click', () => imageInput.click());
+        
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                
+                if (!validTypes.includes(file.type)) {
+                    showError(imageInput, 'activity.image.invalid_type');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.remove('d-none');
+                    imagePlaceholder.classList.add('d-none');
+                    clearError(imageInput);
+                    
+                    if (removeImageField) {
+                        removeImageField.value = '0';
+                    }
+                    
+                    if (removeImageBtn) {
+                        removeImageBtn.style.display = 'block';
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Remove image handling
+        if (removeImageBtn && removeImageField) {
+            removeImageBtn.addEventListener('click', function() {
+                imagePreview.src = '';
+                imagePreview.classList.add('d-none');
+                imagePlaceholder.classList.remove('d-none');
+                imageInput.value = '';
+                removeImageField.value = '1';
+                this.style.display = 'none';
+                clearError(imageInput);
+            });
+        }
+
+        // Drag and drop
+        const uploadContainer = document.querySelector('.image-upload-container');
+        
+        ['dragenter', 'dragover'].forEach(event => {
+            uploadContainer.addEventListener(event, (e) => {
+                e.preventDefault();
+                uploadContainer.classList.add('border-primary');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(event => {
+            uploadContainer.addEventListener(event, (e) => {
+                e.preventDefault();
+                uploadContainer.classList.remove('border-primary');
+            });
+        });
+
+        uploadContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files.length) {
+                imageInput.files = e.dataTransfer.files;
+                const event = new Event('change');
+                imageInput.dispatchEvent(event);
+            }
+        });
+
+        // Form validation
+        function showError(input, errorKey) {
+            const formGroup = input.closest('.mb-4') || input.closest('.image-upload-container');
+            const errorElements = formGroup.querySelectorAll('[data-error]');
+            
+            errorElements.forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            const errorElement = formGroup.querySelector(`[data-error="${errorKey}"]`);
+            if (errorElement) {
+                errorElement.style.display = 'block';
+                input.classList.add('is-invalid');
+            }
+        }
+
+        function clearError(input) {
+            const formGroup = input.closest('.mb-4') || input.closest('.image-upload-container');
+            const errorElements = formGroup.querySelectorAll('.invalid-feedback');
+            
+            errorElements.forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            input.classList.remove('is-invalid');
+        }
+
+        function validateField(input) {
+            clearError(input);
+            
+            if (input === imageInput) {
+                // If we have removeImageField and image is marked for removal
+                if (removeImageField && removeImageField.value === '1') {
+                    return true;
+                }
+                
+                // If image is required and no file is selected
+                if (input.required && (!input.files || input.files.length === 0)) {
+                    showError(input, 'activity.image.required');
+                    return false;
+                }
+                
+                // If file is selected, check its type
+                if (input.files && input.files.length > 0) {
+                    const file = input.files[0];
+                    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                    
+                    if (!validTypes.includes(file.type)) {
+                        showError(input, 'activity.image.invalid_type');
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            if (input.required && !input.value.trim()) {
+                const errorKey = input.id === '{{ form.nom.vars.id }}' 
+                    ? 'activity.name.blank' 
+                    : input.id === '{{ form.description.vars.id }}'
+                    ? 'activity.description.blank'
+                    : 'activity.type.invalid';
+                showError(input, errorKey);
+                return false;
+            }
+
+            if (input.dataset.maxlength && input.value.length > input.dataset.maxlength) {
+                const errorKey = input.id === '{{ form.nom.vars.id }}' 
+                    ? 'activity.name.too_long' 
+                    : 'activity.description.too_long';
+                showError(input, errorKey);
+                return false;
+            }
+
+            return true;
+        }
+
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            // Validate all required fields
+            const requiredFields = [
+                nameInput,
+                descInput,
+                document.querySelector('input[name="{{ form.type.vars.full_name }}"]:checked'),
+                imageInput
+            ];
+            
+            requiredFields.forEach(field => {
+                if (field && !validateField(field)) {
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                // Scroll to first error
+                const firstError = form.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+
+        // Real-time validation
+        [nameInput, descInput].forEach(input => {
+            input.addEventListener('blur', () => validateField(input));
+        });
+
+        // Type radio buttons validation
+        const typeRadios = document.querySelectorAll('input[name="{{ form.type.vars.full_name }}"]');
+        typeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                const checkedRadio = document.querySelector('input[name="{{ form.type.vars.full_name }}"]:checked');
+                validateField(checkedRadio);
+            });
+        });
+    });
+    </script>
+{% endblock %}

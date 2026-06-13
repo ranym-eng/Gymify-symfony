@@ -1,0 +1,155 @@
+{% extends 'sportif/base.html.twig' %}
+
+{% block title %}Nos Activités Sportives{% endblock %}
+
+{% block stylesheets %}
+    <style>
+    .page-spacer {
+    height: 50px;
+    width: 100%;
+    clear: both;
+}
+        .badge-orange {
+            background-color: #FFA500; /* Orange */
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .badge-white {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: black;
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .badge-blue {
+            background-color: #007bff; /* Blue */
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .class-item {
+            margin-bottom: 30px;
+        }
+        .class-item .ci-pic img {
+            height: 200px;
+            object-fit: cover;
+        }
+        .filter-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            min-width: 120px;
+            text-align: center;
+            flex-direction: column;
+        }
+        .filter-button:hover {
+            background-color: #f0f0f0;
+        }
+        .filter-button i {
+            margin-bottom: 5px;
+            font-size: 24px;
+            color: #6c757d; /* Gris clair */
+        }
+        .filter-description {
+            font-size: 0.85rem;
+            color: #adb5bd; /* Gris clair pour la description */
+        }
+        .icon-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .icon-container i {
+            font-size: 30px;
+            margin-bottom: 5px;
+            color: #6c757d; /* Gris clair pour l'icône */
+        }
+        .filter-button strong {
+            color: #6c757d; /* Gris clair pour le texte */
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<section class="classes-section spad">
+    <div class="container">
+            <div class="page-spacer"></div>
+
+        <div class="section-title">
+            <h2>Nos Activités</h2>
+            <p>Choisissez l'activité qui vous correspond</p>
+        </div>
+        <div class="page-spacer"></div>
+
+
+        {# Filtres centrés avec flex-wrap #}
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="d-flex flex-wrap justify-content-center">
+                    <div class="filter-button" onclick="filterActivities('')">
+                        <i class="fas fa-th"></i>
+                        <strong>Tous</strong>
+                    </div>
+                    {% for type in activity_types %}
+                        <div class="filter-button" onclick="filterActivities('{{ type.label() }}')">
+                            <div class="icon-container">
+                                <i class="{{ type.icon }}"></i>
+                                <strong>{{ type.label() }}</strong>
+                                <p class="filter-description">{{ type.description }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# Affichage des activités #}
+            {% for activity in activities %}
+                <div class="col-lg-4 col-md-6 activity-item" data-type="{{ activity.type.label() }}">
+                    <div class="class-item">
+                        <div class="ci-pic">
+                            <img src="{{ activity.url }}" alt="{{ activity.nom }}">
+                        </div>
+                        <div class="ci-text">
+                            <h5>{{ activity.nom }}</h5>
+                            <span class="badge {{ activity.type == 'PERSONAL_TRAINING' ? 'badge-orange' : activity.type == 'GROUP_ACTIVITY' ? 'badge-blue' : 'badge-white' }}">
+                                {{ activity.type.label() }}
+                            </span>
+                            <p>{{ activity.description }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <p>Aucune activité disponible pour le moment.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<script>
+    function filterActivities(type) {
+        const activities = document.querySelectorAll('.activity-item');
+        activities.forEach(activity => {
+            if (activity.dataset.type === type || type === '') {
+                activity.style.display = 'block';
+            } else {
+                activity.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

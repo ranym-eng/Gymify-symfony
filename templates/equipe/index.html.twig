@@ -1,0 +1,358 @@
+{% extends 'responsable/homepage_responsable.html.twig' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+    <style>
+        /* Ensure the navbar header aligns correctly */
+        .navbar-header { justify-content: flex-end !important; }
+
+        /* Card styling with precise dimensions */
+        .team-card {
+            transition: all 0.3s ease;
+            border-radius: 15px;
+            width: 100%; /* Ensure cards take full width of their column */
+            max-width: 350px; /* Fixed width for all cards */
+            min-height: 350px; /* Fixed height to accommodate all content */
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin: 0 auto; /* Center the card within its column */
+        }
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Image styling with precise size */
+        .team-image {
+            height: 150px; /* Fixed height for consistency */
+            width: 100%;
+            object-fit: cover; /* Maintain aspect ratio */
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            background-color: #f0f0f0; /* Fallback background if image fails to load */
+        }
+
+        /* Card body styling */
+        .team-card .card-body {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .team-card .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .team-card p {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            color: #555;
+        }
+        .team-card strong {
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Card footer styling */
+        .team-card .card-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        /* Button styling */
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        .btn-icon:hover {
+            transform: scale(1.1);
+        }
+        .btn-outline-secondary { /* Details button */
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: #fff;
+        }
+        .btn-outline-primary { /* Edit button */
+            border-color: #007bff;
+            color: #007bff;
+        }
+        .btn-outline-primary:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .btn-outline-danger { /* Delete button */
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        /* Center the buttons in the footer */
+        .team-card .card-footer .d-flex {
+            justify-content: center;
+        }
+
+        /* Neumorphic Pagination Styles */
+        .pagination {
+            margin-bottom: 0;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            padding: 8px 0;
+        }
+        .page-item {
+            display: flex;
+            align-items: center;
+        }
+        .page-link {
+            background: linear-gradient(145deg, #f0f0f0, #e0e0e0);
+            border: none;
+            border-radius: 12px;
+            padding: 8px 14px;
+            color: #3f51b5;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1), -4px -4px 8px rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+        }
+        .page-link:hover {
+            background: linear-gradient(145deg, #3f51b5, #303f9f);
+            color: white;
+            transform: translateY(1px);
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2), inset -2px -2px 4px rgba(255, 255, 255, 0.1);
+        }
+        .page-item.active .page-link {
+            background: linear-gradient(145deg, #3f51b5, #303f9f);
+            color: white;
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2), inset -2px -2px 4px rgba(255, 255, 255, 0.1);
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        .page-item.disabled .page-link {
+            background: linear-gradient(145deg, #f0f0f0, #e0e0e0);
+            color: #bdbdbd;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .page-link i {
+            transition: transform 0.3s ease;
+        }
+        .page-link:hover i.fa-chevron-left {
+            transform: scale(1.2) translateX(-2px);
+        }
+        .page-link:hover i.fa-chevron-right {
+            transform: scale(1.2) translateX(2px);
+        }
+        .page-link span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .team-card {
+                max-width: 100%; /* Allow cards to take full column width on smaller screens */
+                min-height: 330px; /* Slightly reduce height */
+            }
+            .team-image {
+                height: 140px; /* Slightly smaller image on smaller screens */
+            }
+            .pagination {
+                justify-content: center;
+            }
+        }
+        @media (max-width: 576px) {
+            .team-card {
+                min-height: 300px;
+            }
+            .team-image {
+                height: 120px;
+            }
+            .team-card .card-title {
+                font-size: 1.1rem;
+            }
+            .team-card p {
+                font-size: 0.9rem;
+            }
+            .pagination {
+                gap: 6px;
+            }
+            .page-link {
+                padding: 6px 12px;
+                min-width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid px-4 animate__animated animate__fadeIn">
+        <div class="d-flex justify-content-between align-items-center mb-5 pt-4">
+            <div>
+                <h1 class="text-primary mb-1 fw-bold">{{ page_title }}</h1>
+                <p class="text-muted">Manage all your teams in one place</p>
+            </div>
+            <a href="{{ path('app_equipe_new') }}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+                <i class="fas fa-plus me-2"></i> Add New Team
+            </a>
+        </div>
+
+        <!-- Flash messages -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+
+        <div class="row">
+            {% for equipe in equipes %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card team-card shadow-sm">
+                        <img src="{{ equipe.imageUrl ?? '/images/placeholder.jpg' }}" class="card-img-top team-image" alt="{{ equipe.nom }}" onerror="this.src='/images/placeholder.jpg';">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ equipe.nom }}</h5>
+                            <p><strong>Level:</strong> {{ equipe.niveau ? equipe.niveau.value|capitalize : 'N/A' }}</p>
+                            <p><strong>Number of Members:</strong> {{ equipe.nombreMembres|default('N/A') }}</p>
+                        </div>
+                        <div class="card-footer bg-white border-0">
+                            <div class="d-flex gap-3">
+                                <a href="{{ path('app_equipe_show', {'id': equipe.id}) }}" class="btn btn-icon btn-outline-secondary rounded-circle" title="Details" data-bs-toggle="tooltip">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <a href="{{ path('app_equipe_edit', {'id': equipe.id}) }}" class="btn btn-icon btn-outline-primary rounded-circle" title="Edit" data-bs-toggle="tooltip">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </a>
+                                <form method="post" action="{{ path('app_equipe_delete', {'id': equipe.id}) }}" onsubmit="return confirm('Are you sure you want to delete this team?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ equipe.id) }}">
+                                    <button class="btn btn-icon btn-outline-danger rounded-circle" title="Delete" data-bs-toggle="tooltip">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i>
+                        <h5>No teams found</h5>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if equipes.getNbResults() > 0 %}
+            <div class="card-footer bg-white border-0 py-3 position-relative" style="min-height: 60px;">
+                <div class="text-muted small position-absolute start-0 ms-3">
+                    Showing <span class="fw-bold">{{ (equipes.getCurrentPage() - 1) * equipes.getMaxPerPage() + 1 }}</span> to 
+                    <span class="fw-bold">{{ min(equipes.getCurrentPage() * equipes.getMaxPerPage(), equipes.getNbResults()) }}</span> of 
+                    <span class="fw-bold">{{ equipes.getNbResults() }}</span> entries
+                </div>
+                <div class="d-flex justify-content-end me-3">
+                    <ul class="pagination">
+                        <!-- First Page -->
+                        <li class="page-item {% if equipes.getCurrentPage() == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ path('app_equipe_index', app.request.query.all|merge({'page': 1})) }}">
+                                <i class="fas fa-angle-double-left"></i> First
+                            </a>
+                        </li>
+                        <!-- Previous Page -->
+                        <li class="page-item {% if equipes.getCurrentPage() == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ path('app_equipe_index', app.request.query.all|merge({'page': equipes.getCurrentPage() - 1})) }}">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </li>
+
+                        <!-- Page Numbers (limited to 12) -->
+                        {% set startPage = max(1, equipes.getCurrentPage() - 6) %}
+                        {% set endPage = min(startPage + 11, equipes.getNbPages()) %}
+                        
+                        {% if startPage > 1 %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        
+                        {% for i in startPage..endPage %}
+                            <li class="page-item {% if equipes.getCurrentPage() == i %}active{% endif %}">
+                                <a class="page-link" href="{{ path('app_equipe_index', app.request.query.all|merge({'page': i})) }}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+                        
+                        {% if endPage < equipes.getNbPages() %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+
+                        <!-- Next Page -->
+                        <li class="page-item {% if equipes.getCurrentPage() == equipes.getNbPages() %}disabled{% endif %}">
+                            <a class="page-link" href="{{ path('app_equipe_index', app.request.query.all|merge({'page': equipes.getCurrentPage() + 1})) }}">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        <!-- Last Page -->
+                        <li class="page-item {% if equipes.getCurrentPage() == equipes.getNbPages() %}disabled{% endif %}">
+                            <a class="page-link" href="{{ path('app_equipe_index', app.request.query.all|merge({'page': equipes.getNbPages()})) }}">
+                                Last <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+{% endblock %}

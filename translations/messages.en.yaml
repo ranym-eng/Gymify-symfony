@@ -1,0 +1,92 @@
+# General Interface
+search:
+  placeholder: "Search..."
+  label: "Search"
+
+navbar:
+  greeting: "Hi"
+  guest: "Guest"
+  view_profile: "View Profile"
+  my_profile: "My Profile"
+  logout: "Logout"
+  login: "Login"
+
+sidebar:
+  settings: "Settings"
+  language: "Language"
+
+# Blog Module
+blog:
+  title: "Blogs"
+  my_blogs: "My Blogs"
+  all_blogs: "All Blogs"
+  add_blog: "Add Blog"
+  edit_blog: "Edit Blog"
+  delete_blog: "Delete Blog"
+  no_blogs: "No blogs found"
+  created_at: "Created on"
+  updated_at: "Updated on"
+  created_by: "Created by"
+  read_more: "Read More"
+  back_to_list: "Back to List"
+  save: "Save"
+  cancel: "Cancel"
+  confirm_delete: "Are you sure you want to delete this blog?"
+  success:
+    created: "Blog created successfully!"
+    updated: "Blog updated successfully!"
+    deleted: "Blog deleted successfully!"
+  error:
+    create: "Error creating blog."
+    update: "Error updating blog."
+    delete: "Error deleting blog."
+    image_both: "Please choose either a local image or a URL, not both."
+    image_upload: "Error uploading image."
+  form:
+    title: "Title"
+    content: "Content"
+    image: "Image"
+    image_url: "Image URL"
+    submit: "Submit"
+    or_url: "or enter an image URL"
+  
+# Comments
+comment:
+  title: "Comments"
+  add: "Add Comment"
+  edit: "Edit Comment"
+  delete: "Delete Comment"
+  no_comments: "No comments yet"
+  write: "Write a comment..."
+  submit: "Submit"
+  created_at: "Commented on"
+  updated_at: "Modified on"
+  confirm_delete: "Are you sure you want to delete this comment?"
+  success:
+    created: "Comment added successfully!"
+    updated: "Comment updated successfully!"
+    deleted: "Comment deleted successfully!"
+  error:
+    create: "Error adding comment."
+    update: "Error updating comment."
+    delete: "Error deleting comment."
+    
+# Reactions
+reaction:
+  like: "Like"
+  love: "Love"
+  haha: "Haha"
+  wow: "Wow"
+  sad: "Sad"
+  angry: "Angry"
+  
+# Statistics
+stats:
+  title: "Statistics"
+  my_stats: "My Statistics"
+  global_stats: "Global Statistics"
+  posts_per_day: "Posts per day"
+  comments_per_day: "Comments per day"
+  reactions_distribution: "Reactions distribution"
+  most_active_users: "Most active users"
+  most_popular_posts: "Most popular posts" 

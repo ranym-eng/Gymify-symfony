@@ -1,0 +1,644 @@
+{% extends 'sportif/base.html.twig' %}
+
+{% block title %}Recommandations Personnalisées{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --primary-color: rgb(208, 107, 29);
+            --secondary-color: rgb(206, 92, 10);
+            --accent-color: rgb(9, 3, 6);
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --success-color: #4cc9f0;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Hero Section */
+        .recommendations-hero {
+            background: linear-gradient(135deg, rgba(168, 81, 20, 0.9) 0%, rgba(0, 0, 0, 0.9) 100%), 
+                        url('{{ asset("img/recommendation-bg.jpg") }}') center/cover no-repeat;
+            padding: 120px 0 80px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .recommendations-hero::before {
+            content: "";
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: var(--light-color);
+            transform: skewY(-3deg);
+            z-index: 1;
+        }
+
+        /* Section Header */
+        .section-header {
+            position: relative;
+            text-align: center;
+            margin-bottom: 60px;
+            z-index: 2;
+        }
+
+        .section-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* Cards Grid */
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        /* Course Card */
+        .course-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+        }
+
+        .course-media {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .course-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .course-card:hover .course-image {
+            transform: scale(1.05);
+        }
+
+        .course-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--accent-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            z-index: 2;
+            box-shadow: 0 3px 10px rgba(247, 37, 133, 0.3);
+        }
+
+        .course-content {
+            padding: 25px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .course-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--dark-color);
+        }
+
+        .course-description {
+            color: var(--gray-color);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            flex: 1;
+        }
+
+        .course-meta {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: auto;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            color: var(--gray-color);
+            font-size: 0.85rem;
+        }
+
+        .meta-item i {
+            margin-right: 5px;
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+
+        /* Loading State */
+        .loading-container {
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(67, 97, 238, 0.1);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: var(--gray-color);
+            font-weight: 500;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Results Section */
+        .results-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .results-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .results-title::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        .results-subtitle {
+            color: var(--gray-color);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--gray-color);
+            opacity: 0.3;
+            margin-bottom: 20px;
+        }
+
+        .empty-text {
+            font-size: 1.2rem;
+            color: var(--gray-color);
+            margin-bottom: 30px;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 992px) {
+            .section-title {
+                font-size: 2.4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .section-subtitle {
+                font-size: 1rem;
+            }
+            
+            .courses-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- Hero Section -->
+    <section class="recommendations-hero">
+        <div class="container">
+            <div class="section-header">
+                <h1 class="section-title">Recommandations Personnalisées</h1>
+                <p class="section-subtitle">
+                    Découvrez les cours spécialement adaptés à votre profil et vos objectifs sportifs
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recommendations Section -->
+    <section class="py-5 bg-light">
+        <div class="container py-5">
+            <div id="prediction" class="loading-container">
+                <div class="loading-spinner"></div>
+                <p class="loading-text">Analyse de votre profil en cours...</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script>
+        // Mapping des objectifs vers des numéros
+        const objectifMap = {
+            'PERTE_POIDS': 1,
+            'PRISE_DE_MASSE': 2,
+            'ENDURANCE': 3,
+            'RELAXATION': 4
+        };
+
+        // Fonction pour normaliser les données
+        function normalizeData(data) {
+            return {
+                poids: (data.poids - 40) / (120 - 40), // Normaliser poids (40-120 kg)
+                taille: (data.taille - 1.4) / (2.1 - 1.4), // Normaliser taille (1.4-2.1 m)
+                age: (data.age - 18) / (80 - 18), // Normaliser âge (18-80 ans)
+                sexe: data.sexe,
+                objectif: data.objectif / 4 // Normaliser objectif (1-4)
+            };
+        }
+
+        // Récupération des données utilisateur
+        async function fetchUserData(userId) {
+            try {
+                const response = await fetchWithTimeout(`{{ url('api_user', { id: userId }) }}`, 5000);
+                if (!response.ok) throw new Error('Erreur lors de la récupération des données utilisateur');
+                const userData = await response.json();
+
+                // Normalisation des données
+                const normalizedData = normalizeData({
+                    poids: parseFloat(userData.poids) || 70,
+                    taille: (parseFloat(userData.taille) || 175) / 100, // Convertir cm en mètres
+                    age: parseInt(userData.age, 10) || 30,
+                    sexe: userData.sexe === 'Homme' ? 1 : userData.sexe === 'Femme' ? 0 : 0.5,
+                    objectif: objectifMap[userData.objectif] || 1
+                });
+
+                console.log("Données utilisateur normalisées :", normalizedData);
+                return normalizedData;
+            } catch (error) {
+                console.error("Erreur lors de la récupération des données utilisateur :", error);
+                return null;
+            }
+        }
+
+        // Récupération des cours disponibles
+        async function fetchCourses() {
+            try {
+                const response = await fetchWithTimeout('{{ url('api_courses') }}', 5000);
+                if (!response.ok) throw new Error('Erreur lors de la récupération des cours');
+                const courses = await response.json();
+
+                // Filtrage des cours valides
+                const validCourses = courses.filter(course =>
+                    course.title &&
+                    course.description &&
+                    course.heurDebut &&
+                    course.heurFin &&
+                    course.objectif &&
+                    objectifMap[course.objectif]
+                );
+
+                if (validCourses.length === 0) {
+                    console.error("Aucun cours valide trouvé.");
+                    return [];
+                }
+
+                console.log("Cours valides reçus :", validCourses);
+                return validCourses;
+            } catch (error) {
+                console.error("Erreur lors de la récupération des cours :", error);
+                return [];
+            }
+        }
+
+        // Fetch avec timeout
+        async function fetchWithTimeout(url, timeout) {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(id);
+                if (!response.ok) throw new Error('Erreur lors de la requête');
+                return response;
+            } catch (error) {
+                clearTimeout(id);
+                throw new Error('Délai dépassé ou erreur réseau');
+            }
+        }
+
+        // Entraînement du modèle
+        async function trainModel(courses) {
+            const inputShape = 5; // poids, taille, age, sexe, objectif
+            const outputShape = courses.length;
+
+            // Création du modèle
+            const model = tf.sequential({
+                layers: [
+                    tf.layers.dense({ inputShape: [inputShape], units: 32, activation: 'relu' }),
+                    tf.layers.dense({ units: 16, activation: 'relu' }),
+                    tf.layers.dense({ units: outputShape, activation: 'softmax' })
+                ]
+            });
+
+            // Compilation du modèle
+            model.compile({
+                optimizer: tf.train.adam(0.01),
+                loss: 'categoricalCrossentropy',
+                metrics: ['accuracy']
+            });
+
+            // Données d'entraînement simulées (alignées avec les objectifs)
+            const trainingInputs = tf.tensor2d([
+                // Perte de poids (objectif: 1)
+                [75/120, 1.80, 25/80, 1, 1/4],  // Homme
+                [80/120, 1.78, 27/80, 0, 1/4],  // Femme
+                [68/120, 1.68, 29/80, 0, 1/4],  // Femme
+                // Prise de masse (objectif: 2)
+                [85/120, 1.75, 30/80, 1, 2/4],  // Homme
+                [90/120, 1.85, 40/80, 1, 2/4],  // Homme
+                [82/120, 1.82, 33/80, 1, 2/4],  // Homme
+                // Endurance (objectif: 3)
+                [60/120, 1.65, 20/80, 0, 3/4],  // Femme
+                [65/120, 1.60, 35/80, 0, 3/4],  // Femme
+                [62/120, 1.62, 24/80, 0, 3/4],  // Femme
+                // Relaxation (objectif: 4)
+                [70/120, 1.70, 22/80, 1, 4/4],  // Homme
+                [72/120, 1.72, 28/80, 0.5, 4/4], // Autre
+                [74/120, 1.74, 26/80, 1, 4/4]   // Homme
+            ]);
+
+            // Associer chaque exemple au cours correspondant à l'objectif
+            const courseIndicesByObjectif = {
+                1: [0, 1, 2], // PERTE_POIDS -> Cours 0, 1, 2 (azzzzza, ffffffffff, Salsa)
+                2: [3],       // PRISE_DE_MASSE -> Cours 3 (Musculation)
+                3: [4],       // ENDURANCE -> Cours 4 (fitness)
+                4: [5]        // RELAXATION -> Cours 5 (Yoga)
+            };
+
+            // Créer trainingOutputs manuellement
+            const trainingOutputsData = [];
+            for (let i = 0; i < trainingInputs.shape[0]; i++) {
+                const objectif = trainingInputs.slice([i, 4], [1, 1]).dataSync()[0] * 4;
+                const indices = courseIndicesByObjectif[objectif];
+                const output = new Array(outputShape).fill(0);
+                indices.forEach(idx => output[idx] = 1 / indices.length);
+                trainingOutputsData.push(output);
+            }
+            const trainingOutputs = tf.tensor2d(trainingOutputsData, [trainingInputs.shape[0], outputShape]);
+
+            // Entraînement
+            await model.fit(trainingInputs, trainingOutputs, {
+                epochs: 100,
+                batchSize: 4,
+                verbose: 0
+            });
+
+            return model;
+        }
+
+        // Obtention des meilleures recommandations
+        function getTopNIndices(array, n, userObjectif, courses) {
+            // Prioriser les cours correspondant à l'objectif
+            const scoredCourses = Array.from(array)
+                .map((value, index) => ({
+                    value,
+                    index,
+                    matchesObjectif: objectifMap[courses[index].objectif] === userObjectif
+                }))
+                .sort((a, b) => {
+                    if (a.matchesObjectif && !b.matchesObjectif) return -1;
+                    if (!a.matchesObjectif && b.matchesObjectif) return 1;
+                    return b.value - a.value;
+                })
+                .slice(0, n)
+                .map(item => item.index);
+            return scoredCourses;
+        }
+
+        // Fonction pour générer un nombre aléatoire pour les images
+        function getRandomImageIndex(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Vérification des données utilisateur
+        function isInvalidUserData(userData) {
+            return isNaN(userData.poids) || 
+                   isNaN(userData.taille) || 
+                   isNaN(userData.age) || 
+                   isNaN(userData.objectif);
+        }
+
+        // Affichage des erreurs
+        function showError(message) {
+            document.getElementById("prediction").innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <h4 class="empty-text">${message}</h4>
+                    <button class="btn btn-primary" onclick="window.location.reload()">
+                        <i class="fas fa-sync-alt mr-2"></i>Réessayer
+                    </button>
+                </div>
+            `;
+        }
+
+        // Affichage des recommandations
+        function displayRecommendations(prediction, courses, numberOfRecommendations, userObjectif) {
+            const topNIndices = getTopNIndices(prediction, numberOfRecommendations, userObjectif, courses);
+            console.log("Scores de prédiction:", prediction);
+            console.log("Cours recommandés:", topNIndices.map(i => courses[i]));
+
+            let recommendationsHTML = `
+                <div class="results-header">
+                    <h2 class="results-title">Nos recommandations pour vous</h2>
+                    <p class="results-subtitle">
+                        Basé sur votre profil et vos objectifs personnels
+                    </p>
+                </div>
+                <div class="courses-grid">
+            `;
+
+            topNIndices.forEach((index, i) => {
+                const course = courses[index];
+                const randomImageIndex = getRandomImageIndex(1, 6);
+                const delayClass = `delay-${i+1}`;
+                
+                recommendationsHTML += `
+                    <div class="course-card fade-in ${delayClass}">
+                        <div class="course-media">
+                            <img src="{{ asset('img/classes/class-') }}${randomImageIndex}.jpg" alt="${course.title}" class="course-image">
+                            <span class="course-badge">Recommandé</span>
+                        </div>
+                        <div class="course-content">
+                            <h3 class="course-title">${course.title}</h3>
+                            <p class="course-description">${course.description}</p>
+                            <div class="course-meta">
+                                <span class="meta-item">
+                                    <i class="far fa-clock"></i>
+                                    ${course.heurDebut} - ${course.heurFin}
+                                </span>
+                                <span class="meta-item">
+                                    <i class="fas fa-bullseye"></i>
+                                    ${course.objectif}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            recommendationsHTML += `</div>`;
+            document.getElementById("prediction").innerHTML = recommendationsHTML;
+        }
+
+        // Fonction principale de prédiction
+        async function predict(userId, numberOfRecommendations = 3) {
+            try {
+                console.log("Début de la prédiction...");
+
+                // Récupération des données
+                const [userData, courses] = await Promise.all([
+                    fetchUserData(userId),
+                    fetchCourses()
+                ]);
+
+                // Vérification des données
+                if (!userData || courses.length === 0) {
+                    showError("Données insuffisantes pour générer des recommandations");
+                    return;
+                }
+
+                if (isInvalidUserData(userData)) {
+                    console.error("Données utilisateur invalides :", userData);
+                    showError("Votre profil contient des informations incomplètes");
+                    return;
+                }
+
+                // Entraînement du modèle
+                const model = await trainModel(courses);
+                if (!model) {
+                    showError("Erreur lors de l'analyse des données");
+                    return;
+                }
+
+                // Préparation des données d'entrée
+                const input = tf.tensor2d([[
+                    userData.poids,
+                    userData.taille,
+                    userData.age,
+                    userData.sexe,
+                    userData.objectif
+                ]]);
+
+                // Prédiction
+                const output = model.predict(input);
+                const prediction = await output.data();
+                
+                if (!prediction || prediction.some(isNaN)) {
+                    console.error("Prédiction invalide :", prediction);
+                    showError("Erreur dans l'analyse des données");
+                    return;
+                }
+
+                // Affichage des résultats
+                displayRecommendations(prediction, courses, numberOfRecommendations, userData.objectif * 4);
+                
+            } catch (error) {
+                console.error("Erreur lors de la prédiction :", error);
+                showError("Une erreur est survenue. Veuillez réessayer.");
+            }
+        }
+
+        // Lancement de la prédiction au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            const userId = {{ userId|json_encode|raw }};
+            predict(userId, 3);
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,932 @@
+{% extends 'sportifdashboard/homepagesportif.html.twig' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block body_attrs %}
+  {{ parent() }}
+  data-user-id="{{ app.user ? app.user.id : '' }}"
+{% endblock %}
+
+{% block stylesheet %}
+  {{ parent() }}
+  <link rel="stylesheet" href="{{ asset('css/post-style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* Facebook-like mention styling */
+    .user-mention {
+      color: #00CED1 !important; /* Turquoise blue */
+      font-weight: 500 !important;
+      background-color: rgba(0, 206, 209, 0.1) !important;
+      padding: 0 3px !important;
+      border-radius: 4px !important;
+      text-decoration: none !important;
+      display: inline-block !important;
+    }
+    
+    .user-mention:hover {
+      text-decoration: underline !important;
+      background-color: rgba(0, 206, 209, 0.2) !important;
+      cursor: pointer !important;
+    }
+    
+    .alert {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 4px;
+      z-index: 1050;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+      border-left: 4px solid #28a745;
+    }
+    
+    .alert-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border-left: 4px solid #dc3545;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+    
+    .sensitive-content {
+      background-color: #fff8e1;
+      padding: 10px;
+      border-radius: 4px;
+      position: relative;
+    }
+    
+    .edit-form {
+      margin-top: 10px;
+    }
+
+    /* Styles from post/index.html.twig for comments */
+    .comment-actions {
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.2s ease;
+        display: inline-flex !important;
+        gap: 12px;
+        align-items: center;
+        position: absolute !important;
+        right: 10px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        z-index: 100 !important;
+    }
+
+    .comment-container:hover .comment-actions {
+        opacity: 1 !important;
+    }
+
+    .btn-icon {
+        padding: 8px !important;
+        border-radius: 50% !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+        border: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .btn-icon:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.25) !important;
+    }
+
+    /* Couleurs et styles pour les icônes */
+    .btn-icon.edit {
+        background-color: #2196F3 !important;
+    }
+    
+    .btn-icon.edit i {
+        color: white !important;
+        font-size: 1rem !important;
+    }
+
+    .btn-icon.delete {
+        background-color: #dc3545 !important;
+    }
+
+    .btn-icon.delete i {
+        color: white !important;
+        font-size: 1rem !important;
+    }
+
+    /* Effets de survol améliorés */
+    .btn-icon.edit:hover {
+        background-color: #0d8bf2 !important;
+    }
+
+    .btn-icon.delete:hover {
+        background-color: #c82333 !important;
+    }
+
+    /* Style pour les tooltips */
+    [data-tooltip] {
+        position: relative !important;
+    }
+
+    [data-tooltip]:before {
+        content: attr(data-tooltip);
+        position: absolute !important;
+        bottom: 120% !important;
+        left: 50% !important;
+        transform: translateX(-50%) translateY(-5px) !important;
+        padding: 6px 12px !important;
+        background: rgba(0, 0, 0, 0.8) !important;
+        color: white !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        white-space: nowrap !important;
+        border-radius: 4px !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+        z-index: 100 !important;
+    }
+
+    [data-tooltip]:hover:before {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateX(-50%) translateY(-10px) !important;
+    }
+
+    .sensitive-warning {
+        color: #856404;
+        background-color: #fff3cd;
+        border: 1px solid #ffeeba;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 5px;
+    }
+  </style>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
+  <script src="{{ asset('js/ably-notifications.js') }}"></script>
+  <script src="{{ asset('js/ably-reactions.js') }}"></script>
+  <script src="{{ asset('js/reaction-debug.js') }}"></script>
+  <script src="{{ asset('js/user-mentions.js') }}"></script>
+  <script>
+    // Activer la journalisation de debug pour suivre les opérations de commentaires
+    const DEBUG = true;
+    function debugLog(...args) {
+      if (DEBUG) {
+        console.log('[DEBUG COMMENTS]', ...args);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      debugLog('Initialisation du système de commentaires');
+
+      // Appliquer les styles manuellement pour contourner les problèmes de cache CSS
+      document.querySelectorAll('.comment-actions').forEach(el => {
+        el.style.opacity = "0";
+        el.style.display = "inline-flex";
+        el.style.gap = "12px";
+        el.style.position = "absolute";
+        el.style.right = "10px";
+        el.style.top = "50%";
+        el.style.transform = "translateY(-50%)";
+        el.style.zIndex = "100";
+      });
+      
+      document.querySelectorAll('.btn-icon.edit').forEach(el => {
+        el.style.backgroundColor = "#2196F3";
+        el.style.padding = "8px";
+        el.style.borderRadius = "50%";
+        el.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
+        el.style.border = "none";
+        el.style.display = "flex";
+        el.style.alignItems = "center";
+        el.style.justifyContent = "center";
+        el.style.width = "36px";
+        el.style.height = "36px";
+        el.querySelector('i').style.color = "white";
+      });
+      
+      document.querySelectorAll('.btn-icon.delete').forEach(el => {
+        el.style.backgroundColor = "#dc3545";
+        el.style.padding = "8px";
+        el.style.borderRadius = "50%";
+        el.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
+        el.style.border = "none";
+        el.style.display = "flex";
+        el.style.alignItems = "center";
+        el.style.justifyContent = "center";
+        el.style.width = "36px";
+        el.style.height = "36px";
+        el.querySelector('i').style.color = "white";
+      });
+      
+      // Ajout d'événements hover pour les conteneurs de commentaires
+      document.querySelectorAll('.comment-container').forEach(container => {
+        container.addEventListener('mouseenter', function() {
+          const actions = this.querySelector('.comment-actions');
+          if (actions) actions.style.opacity = "1";
+        });
+        
+        container.addEventListener('mouseleave', function() {
+          const actions = this.querySelector('.comment-actions');
+          if (actions) actions.style.opacity = "0";
+        });
+      });
+
+      // Fonction pour créer une alerte stylisée
+      function createAlert(message, type = 'success') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        return alertDiv;
+      }
+
+      // Fonction pour afficher une alerte
+      function showAlert(message, type = 'success', container) {
+        const alert = createAlert(message, type);
+        container.insertAdjacentElement('afterbegin', alert);
+        setTimeout(() => {
+          alert.classList.remove('show');
+          setTimeout(() => alert.remove(), 150);
+        }, 3000);
+      }
+
+      // Fonction pour mettre à jour la date dans le DOM
+      function updateDateTime(element, newDateTime) {
+        const dateElement = element.querySelector('.text-muted');
+        if (dateElement) {
+          dateElement.textContent = newDateTime;
+        }
+      }
+
+      // Fonction pour créer un élément de commentaire
+      function createCommentElement(data, postId) {
+        const div = document.createElement('div');
+        div.className = 'd-flex align-items-start mb-3';
+        
+        // Vérifier si le commentaire est sensible (toxicité entre 0.4 et 0.6)
+        const isSensitive = data.toxicityScore > 0.4 && data.toxicityScore <= 0.6;
+        
+        // Conteneur principal du commentaire
+        const commentContainer = document.createElement('div');
+        commentContainer.className = 'comment-container w-100 position-relative';
+        
+        // Avatar de l'utilisateur
+        const avatar = document.createElement('img');
+        avatar.src = data.user.avatar;
+        avatar.className = 'rounded-circle me-2';
+        avatar.style.width = '32px';
+        avatar.style.height = '32px';
+        avatar.style.objectFit = 'cover';
+        
+        // Nom de l'utilisateur
+        const userNameElement = document.createElement('strong');
+        userNameElement.textContent = data.user.nom;
+        commentContainer.appendChild(userNameElement);
+        
+        // Contenu du commentaire
+        const contentElement = document.createElement('p');
+        contentElement.className = 'comment-content mb-1' + (isSensitive ? ' sensitive-content' : '');
+        
+        if (isSensitive) {
+          // Pour les commentaires sensibles, stocker le contenu original comme attribut data
+          contentElement.dataset.realContent = data.originalContent || '';
+          const warningDiv = document.createElement('div');
+          warningDiv.className = 'sensitive-warning';
+          warningDiv.style.color = '#856404';
+          warningDiv.style.backgroundColor = '#fff3cd';
+          warningDiv.style.border = '1px solid #ffeeba';
+          warningDiv.style.padding = '10px';
+          warningDiv.style.borderRadius = '4px';
+          warningDiv.style.marginBottom = '5px';
+          warningDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ⚠️ Votre commentaire contient un contenu sensible. Veuillez le modifier si nécessaire.';
+          contentElement.appendChild(warningDiv);
+        } else {
+          // Use innerHTML instead of textContent to properly render HTML from @mentions
+          contentElement.innerHTML = data.content;
+        }
+        commentContainer.appendChild(contentElement);
+        
+        // Date du commentaire
+        const dateElement = document.createElement('small');
+        dateElement.className = 'text-muted';
+        dateElement.textContent = data.createdAt;
+        commentContainer.appendChild(dateElement);
+        
+        // Boutons d'action (si l'utilisateur est le créateur du commentaire)
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'comment-actions';
+        actionsDiv.style.opacity = '0';
+        actionsDiv.style.display = 'inline-flex';
+        actionsDiv.style.gap = '12px';
+        actionsDiv.style.position = 'absolute';
+        actionsDiv.style.right = '10px';
+        actionsDiv.style.top = '50%';
+        actionsDiv.style.transform = 'translateY(-50%)';
+        actionsDiv.style.zIndex = '100';
+        
+        // Bouton Modifier
+        const editButton = document.createElement('button');
+        editButton.className = 'btn-icon edit js-edit-comment-btn';
+        editButton.dataset.commentId = data.id;
+        editButton.dataset.token = data.tokens.edit;
+        editButton.dataset.tooltip = 'Modifier';
+        editButton.style.backgroundColor = '#2196F3';
+        editButton.style.padding = '8px';
+        editButton.style.borderRadius = '50%';
+        editButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        editButton.style.border = 'none';
+        editButton.style.display = 'flex';
+        editButton.style.alignItems = 'center';
+        editButton.style.justifyContent = 'center';
+        editButton.style.width = '36px';
+        editButton.style.height = '36px';
+        
+        const editIcon = document.createElement('i');
+        editIcon.className = 'fas fa-edit';
+        editIcon.style.color = 'white';
+        editButton.appendChild(editIcon);
+        actionsDiv.appendChild(editButton);
+        
+        // Formulaire de suppression
+        const deleteForm = document.createElement('form');
+        deleteForm.action = `/comment/delete/${data.id}`;
+        deleteForm.method = 'post';
+        deleteForm.className = 'js-delete-comment-form d-inline';
+        deleteForm.dataset.postId = postId;
+        
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = data.tokens.delete;
+        deleteForm.appendChild(csrfToken);
+        
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'submit';
+        deleteButton.className = 'btn-icon delete';
+        deleteButton.dataset.tooltip = 'Supprimer';
+        deleteButton.style.backgroundColor = '#dc3545';
+        deleteButton.style.padding = '8px';
+        deleteButton.style.borderRadius = '50%';
+        deleteButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        deleteButton.style.border = 'none';
+        deleteButton.style.display = 'flex';
+        deleteButton.style.alignItems = 'center';
+        deleteButton.style.justifyContent = 'center';
+        deleteButton.style.width = '36px';
+        deleteButton.style.height = '36px';
+        
+        const deleteIcon = document.createElement('i');
+        deleteIcon.className = 'fas fa-trash-alt';
+        deleteIcon.style.color = 'white';
+        deleteButton.appendChild(deleteIcon);
+        deleteForm.appendChild(deleteButton);
+        actionsDiv.appendChild(deleteForm);
+        
+        commentContainer.appendChild(actionsDiv);
+        
+        // Ajouter les événements hover au conteneur de commentaire
+        commentContainer.addEventListener('mouseenter', function() {
+          actionsDiv.style.opacity = '1';
+        });
+        
+        commentContainer.addEventListener('mouseleave', function() {
+          actionsDiv.style.opacity = '0';
+        });
+        
+        // Assembler le commentaire complet
+        div.appendChild(avatar);
+        div.appendChild(commentContainer);
+        
+        return div;
+      }
+      
+      // Fonction pour attacher les événements au bouton d'édition
+      function attachEditButtonEvents(btn) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const commentContainer = this.closest('.comment-container');
+          const commentContent = commentContainer.querySelector('.comment-content');
+          
+          // Récupérer le contenu réel du commentaire, soit depuis l'attribut data pour les commentaires sensibles,
+          // soit depuis le contenu textuel pour les commentaires normaux
+          let commentText = '';
+          if (commentContent.dataset.realContent) {
+            // Pour les commentaires sensibles, utiliser le contenu réel stocké dans l'attribut data
+            commentText = commentContent.dataset.realContent;
+          } else {
+            // Pour les commentaires normaux, utiliser le contenu textuel
+            // If there are HTML elements (like @mentions), we need to get the text content
+            // We'll use a technique to preserve the plain text
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = commentContent.innerHTML;
+            
+            // Replace all @mention spans with their original text
+            tempDiv.querySelectorAll('.user-mention').forEach(span => {
+              const username = span.dataset.username;
+              const mentionText = document.createTextNode('@' + username);
+              span.parentNode.replaceChild(mentionText, span);
+            });
+            
+            commentText = tempDiv.textContent.trim();
+          }
+          
+          const actionsDiv = commentContainer.querySelector('.comment-actions');
+          
+          // Masquer les boutons d'action pendant l'édition
+          if (actionsDiv) {
+            actionsDiv.style.display = 'none';
+          }
+          
+          const editForm = document.createElement('form');
+          editForm.className = 'edit-comment-form mt-2';
+          editForm.style.position = 'relative';
+          editForm.style.zIndex = '200';
+          editForm.style.width = '100%';
+          editForm.style.marginTop = '0 !important';
+          editForm.innerHTML = `
+            <div class="input-group">
+              <input type="text" class="form-control" value="${commentText.replace(/"/g, '&quot;')}" required>
+              <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
+              <button type="button" class="btn btn-secondary btn-sm cancel-edit">Annuler</button>
+            </div>
+          `;
+
+          commentContent.style.display = 'none';
+          commentContent.insertAdjacentElement('afterend', editForm);
+
+          // Focus sur l'input
+          setTimeout(() => {
+            const input = editForm.querySelector('input');
+            if (input) {
+              input.focus();
+              input.setSelectionRange(input.value.length, input.value.length);
+            }
+          }, 10);
+
+          editForm.querySelector('.cancel-edit').addEventListener('click', () => {
+            editForm.remove();
+            commentContent.style.display = '';
+            // Réafficher les boutons d'action quand on annule
+            if (actionsDiv) {
+              actionsDiv.style.display = 'inline-flex';
+            }
+          });
+
+          editForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const newContent = this.querySelector('input').value.trim();
+            const commentId = btn.dataset.commentId;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+
+            try {
+              const response = await fetch(`/comment/${commentId}/edit`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                  content: newContent,
+                  _token: btn.dataset.token
+                })
+              });
+
+              if (!response.ok) {
+                throw new Error('Erreur lors de la modification');
+              }
+
+              const data = await response.json();
+              
+              // Mettre à jour le contenu et la date
+              if (data.toxicityScore > 0.4 && data.toxicityScore <= 0.6) {
+                // Commentaire sensible, on affiche un avertissement mais on stocke le contenu original
+                commentContent.innerHTML = '<div class="sensitive-warning" style="color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 4px; margin-bottom: 5px;"><i class="fas fa-exclamation-triangle"></i> ⚠️ Votre commentaire contient un contenu sensible. Veuillez le modifier si nécessaire.</div>';
+                // Stocker le contenu original pour les éditions futures
+                commentContent.dataset.realContent = data.originalContent || newContent;
+                commentContent.classList.add('sensitive-content');
+                // Afficher une alerte spécifique
+                showAlert('⚠️ Votre commentaire contient un contenu sensible. Veuillez le modifier si nécessaire.', 'warning', document.querySelector('.comments-container'));
+              } else {
+                // Commentaire normal - remplacement complet du contenu avec innerHTML pour gérer les mentions HTML
+                commentContent.innerHTML = data.content;
+                commentContent.classList.remove('sensitive-content');
+                // Supprimer l'attribut data si existant
+                delete commentContent.dataset.realContent;
+                showAlert('Commentaire modifié avec succès', 'success', document.querySelector('.comments-container'));
+              }
+              
+              updateDateTime(commentContainer, data.createdAt);
+              
+              editForm.remove();
+              commentContent.style.display = '';
+              
+              // Réafficher les boutons d'action après l'édition
+              if (actionsDiv) {
+                actionsDiv.style.display = 'inline-flex';
+              }
+
+            } catch (error) {
+              showAlert(error.message, 'danger', document.querySelector('.comments-container'));
+              // Réafficher les boutons d'action en cas d'erreur
+              if (actionsDiv) {
+                actionsDiv.style.display = 'inline-flex';
+              }
+            } finally {
+              submitBtn.disabled = false;
+            }
+          });
+        });
+      }
+      
+      // Fonction pour attacher les événements au formulaire de suppression
+      function attachDeleteFormEvents(form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const postId = this.dataset.postId;
+          const submitBtn = this.querySelector('button[type="submit"]');
+          submitBtn.disabled = true;
+
+          try {
+            const response = await fetch(this.action, {
+              method: 'POST',
+              body: new FormData(this),
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+              throw new Error(data.message || 'Erreur lors de la suppression');
+            }
+
+            // Supprimer le commentaire du DOM
+            const commentElement = this.closest('.d-flex.align-items-start.mb-3');
+            if (commentElement) {
+              commentElement.remove();
+            }
+
+            showAlert(data.message || 'Commentaire supprimé avec succès', 'success', document.querySelector('.comments-container'));
+
+          } catch (error) {
+            showAlert(error.message, 'danger', document.querySelector('.comments-container'));
+          } finally {
+            submitBtn.disabled = false;
+          }
+        });
+      }
+      
+      // Fonction pour attacher les événements au formulaire d'ajout de commentaire
+      function attachAddCommentFormEvents(form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          debugLog('Soumission du formulaire de commentaire', this.action);
+          
+          const postId = this.dataset.postId;
+          const submitBtn = this.querySelector('button[type="submit"]');
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
+
+          try {
+            const formData = new FormData(this);
+            debugLog('FormData préparée', {
+              postId: postId,
+              content: formData.get('content'),
+              token: formData.get('_token')
+            });
+            
+            const response = await fetch(this.action, {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            });
+            debugLog('Réponse reçue', response.status, response.statusText);
+
+            const data = await response.json();
+            debugLog('Données JSON reçues', data);
+            
+            if (!response.ok) {
+              throw new Error(data.error || 'Erreur lors de l\'ajout du commentaire');
+            }
+
+            debugLog('Commentaire ajouté avec succès:', data);
+            debugLog('Création de l\'élément commentaire avec ID:', data.id);
+
+            // Créer et ajouter le nouveau commentaire
+            const commentElement = createCommentElement(data, postId);
+            const commentsContainer = document.querySelector('.comments-container');
+            
+            // Si la liste est vide, supprimer le message "Aucun commentaire" s'il existe
+            const emptyMessage = commentsContainer.querySelector('.text-center.text-muted');
+            if (emptyMessage) {
+              emptyMessage.remove();
+            }
+            
+            // Ajouter le commentaire au début de la liste
+            debugLog('Ajout du commentaire au DOM');
+            commentsContainer.insertBefore(commentElement, commentsContainer.firstChild);
+            
+            // Attacher les événements d'édition et de suppression
+            const newEditBtn = commentElement.querySelector('.js-edit-comment-btn');
+            if (newEditBtn) {
+              debugLog('Attachement des événements d\'édition');
+              attachEditButtonEvents(newEditBtn);
+            }
+            
+            const newDeleteForm = commentElement.querySelector('.js-delete-comment-form');
+            if (newDeleteForm) {
+              debugLog('Attachement des événements de suppression');
+              attachDeleteFormEvents(newDeleteForm);
+            }
+            
+            // Réinitialiser le formulaire
+            this.reset();
+            
+            // Afficher le message approprié en fonction du score de toxicité
+            if (data.toxicityScore > 0.4 && data.toxicityScore <= 0.6) {
+              showAlert('⚠️ Votre commentaire contient un contenu sensible. Veuillez le modifier si nécessaire.', 'warning', commentsContainer);
+            } else {
+              showAlert('Commentaire ajouté avec succès', 'success', commentsContainer);
+            }
+
+          } catch (error) {
+            console.error('Erreur lors de l\'ajout du commentaire:', error);
+            debugLog('ERREUR lors de l\'ajout du commentaire', error);
+            showAlert(error.message, 'danger', document.querySelector('.comments-container'));
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Ajouter';
+          }
+        });
+      }
+      
+      // Attacher les événements aux boutons d'édition existants
+      document.querySelectorAll('.js-edit-comment-btn').forEach(btn => {
+        attachEditButtonEvents(btn);
+      });
+      
+      // Attacher les événements aux formulaires de suppression existants
+      document.querySelectorAll('.js-delete-comment-form').forEach(form => {
+        attachDeleteFormEvents(form);
+      });
+      
+      // Attacher les événements aux formulaires d'ajout de commentaire
+      document.querySelectorAll('.js-add-comment-form').forEach(form => {
+        attachAddCommentFormEvents(form);
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block body %}
+<body {% if app.user %}data-user-id="{{ app.user.id }}"{% endif %}>
+<div class="container mt-4">
+    <!-- Notification System -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+            <a href="{{ path('app_post_index') }}" class="btn btn-outline-secondary me-3">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+            <h1 class="h2 mb-0">{{ post.title }}</h1>
+        </div>
+        
+        <div class="d-flex gap-2 align-items-center">
+            <button id="refresh-comments" class="btn btn-outline-primary d-none">
+                <i class="fas fa-sync-alt"></i> Actualiser
+            </button>
+            
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-bell"></i>
+                    <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
+                        0
+                    </span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown" id="notification-list" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                    <li class="dropdown-item text-center text-muted">Aucune notification</li>
+                </ul>
+            </div>
+            
+            <button id="clear-notifications" class="btn btn-outline-secondary">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="breadcrumb-container mb-4">
+      <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='currentColor'/%3E%3C/svg%3E&#34;);" aria-label="breadcrumb">
+        <ol class="breadcrumb bg-light p-2 rounded">
+          <li class="breadcrumb-item"><a href="{{ path('app_sportifdashboard') }}">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{{ path('app_sportif_blogs') }}">Blogs</a></li>
+          <li class="breadcrumb-item"><a href="{{ path('app_post_index') }}">Liste des posts</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ post.title }}</li>
+        </ol>
+      </nav>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-10 p-0">
+        <div class="d-flex" style="height: 80vh; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;">
+
+          {# Colonne gauche : image du post #}
+          <div class="col-md-7 d-none d-md-block bg-dark p-0">
+            {% if post.imageUrl %}
+              <img src="{{ asset(post.webPath) }}" class="w-100 h-100" style="object-fit: cover;" alt="Image du post">
+            {% else %}
+              <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white">
+                Pas d'image
+              </div>
+            {% endif %}
+          </div>
+
+          {# Colonne droite : contenu & commentaires #}
+          <div class="col-md-5 d-flex flex-column bg-white p-0">
+
+            {# Header avec avatar et auteur #}
+            <div class="d-flex align-items-center p-3 border-bottom">
+              <img 
+                src="{{ post.user.imageUrl ? asset(post.user.imageUrl) : asset('img/screen/user.png') }}"
+                class="rounded-circle me-2" 
+                style="width:32px; height:32px; object-fit:cover;"
+                alt="Avatar {{ post.user.nom }}">
+              <strong>{{ post.user.nom }}</strong>
+            </div>
+
+            {# Contenu du post #}
+            <div class="p-3 border-bottom flex-grow-0">
+              <h5>{{ post.title }}</h5>
+              <p class="mb-1">{{ post.content|raw }}</p>
+              <small class="text-muted">{{ post.createdAt ? post.createdAt|date('d M Y à H:i') : '—' }}</small>
+              
+              <div class="mt-3 post-buttons-container">
+                <button class="btn btn-secondary btn-post-action btn-react-toggle{% if post.userReaction(app.user) %} active{% endif %}" 
+                        data-post-id="{{ post.id }}" 
+                        data-csrf-token="{{ csrf_token('reaction' ~ post.id) }}">
+                  {% set userReaction = post.userReaction(app.user) %}
+                  {% set reactionCounts = post.getReactionsCountByType() %}
+                  {% set totalReactions = 0 %}
+                  {% for count in reactionCounts %}
+                      {% set totalReactions = totalReactions + count %}
+                  {% endfor %}
+                  
+                  {% if userReaction %}
+                    <span class="reaction-{{ userReaction }}">
+                      {{ reactionTypes[userReaction] }}
+                    </span>
+                  {% else %}
+                    <i class="far fa-thumbs-up"></i>
+                  {% endif %}
+                  <span class="reaction-count ms-1">{{ totalReactions }}</span>
+                </button>
+                
+                <div class="reaction-bar d-none">
+                  {% for type, emoji in reactionTypes %}
+                    <span class="react-option" data-type="{{ type }}" data-reaction="{{ type|capitalize }}">
+                      {{ emoji }}
+                    </span>
+                  {% endfor %}
+                </div>
+                
+                <div class="debug-reaction mt-2" style="font-size: 0.8rem; color: #999;">
+                  <strong>Réactions:</strong>
+                  {% for type, count in reactionCounts %}
+                    {% if count > 0 %}
+                      <span class="badge bg-light text-dark me-1">{{ type }}: {{ count }}</span>
+                    {% endif %}
+                  {% endfor %}
+                  {% if app.user and post.userReaction(app.user) %}
+                    <span class="badge bg-primary">Votre réaction: {{ post.userReaction(app.user) }}</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            {# Section commentaires (scrollable) #}
+            <div class="flex-grow-1 overflow-auto p-3 comments-container" style="min-height:0;">
+              {% if comments|length > 0 %}
+                {% for comment in comments %}
+                <div class="d-flex align-items-start mb-3">
+                  <img 
+                    src="{{ comment.user.imageUrl ? asset(comment.user.imageUrl) : asset('img/screen/user.png') }}"
+                    alt="Avatar commentateur"
+                    class="rounded-circle me-2 comment-avatar"
+                    style="width:32px; height:32px; object-fit:cover;"
+                  >
+                  <div class="comment-container w-100 position-relative" data-comment-id="{{ comment.id }}">
+                    <strong>{{ comment.user.nom }}</strong>
+                    <p class="comment-content mb-1" {% if comment.isSensitive %}data-real-content="{{ comment.originalContent }}"{% endif %}>
+                      {% if comment.isSensitive %}
+                        <div class="sensitive-warning">
+                          <i class="fas fa-exclamation-triangle"></i> ⚠️ Votre commentaire contient un contenu sensible. Veuillez le modifier si nécessaire.
+                        </div>
+                      {% else %}
+                        {{ comment.content|raw }}
+                      {% endif %}
+                    </p>
+                    <small class="text-muted">{{ comment.createdAt|date('d M Y à H:i') }}</small>
+                    {% if comment.user == app.user %}
+                      <div class="comment-actions">
+                        <button class="btn-icon edit js-edit-comment-btn" 
+                                data-comment-id="{{ comment.id }}"
+                                data-token="{{ csrf_token('edit-comment' ~ comment.id) }}"
+                                data-tooltip="Modifier">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <form action="{{ path('app_comment_delete', {id: comment.id}) }}" 
+                              method="post" 
+                              class="js-delete-comment-form d-inline" 
+                              data-post-id="{{ post.id }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ comment.id) }}">
+                          <button type="submit" class="btn-icon delete" data-tooltip="Supprimer">
+                            <i class="fas fa-trash-alt"></i>
+                          </button>
+                        </form>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+              
+              {# Pagination for comments #}
+              <div class="mt-3 d-flex justify-content-center">
+                {{ knp_pagination_render(comments) }}
+              </div>
+            {% else %}
+              <p class="text-center text-muted">Aucun commentaire pour ce post.</p>
+            {% endif %}
+          </div>
+
+          {# Formulaire d'ajout de commentaire #}
+          <div class="border-top p-3 d-flex align-items-center">
+            <img 
+              src="{{ app.user.imageUrl ? asset(app.user.imageUrl) : asset('img/screen/user.png') }}" 
+              class="rounded-circle me-2" 
+              style="width:32px; height:32px; object-fit:cover;" 
+              alt="Votre avatar">
+            
+            <div id="comment-errors-{{ post.id }}" class="text-danger mb-2" style="display: none;"></div>
+            
+            <form 
+              action="{{ path('app_comment_new', {postId: post.id}) }}" 
+              method="post" 
+              class="js-add-comment-form w-100 d-flex" 
+              data-post-id="{{ post.id }}"
+            >
+              <input type="hidden" name="_token" value="{{ csrf_token('comment' ~ post.id) }}">
+              <input 
+                type="text" 
+                name="content" 
+                class="form-control me-2 border-0 bg-light" 
+                placeholder="Ajouter un commentaire..." 
+                required
+              >
+              <button type="submit" class="btn btn-primary">Ajouter</button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}

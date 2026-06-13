@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}KaiAdmin - Symfony{% endblock %}</title>
+    
+    {% block stylesheets %}
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
+        <!-- Font Awesome pour les icônes -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <!-- Autres styles locaux -->
+        <link rel="stylesheet" href="{{ asset('css/fonts.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/kaiadmin.min.css') }}">
+
+        <link rel="icon" href="{{ asset('img/favicon.ico') }}" type="image/x-icon">
+    {% endblock %}
+    
+    {% block javascripts_head %}
+        <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+        <script>
+          WebFont.load({
+            google: { families: ["Public Sans:300,400,500,600,700"] },
+            custom: {
+              families: [
+                "Font Awesome 5 Solid",
+                "Font Awesome 5 Regular",
+                "Font Awesome 5 Brands",
+                "simple-line-icons",
+              ],
+              urls: ["{{ asset('css/fonts.min.css') }}"]
+            },
+            active: function() {
+              sessionStorage.fonts = true;
+            }
+          });
+        </script>
+    {% endblock %}
+</head>
+<body>
+    <div class="wrapper">
+        {% include 'responsable/sidebar.html.twig' %}
+        
+        <div class="main-panel">
+            {% include 'responsable/navbar.html.twig' %}
+            
+            <div class="container">
+                <div class="page-inner">
+                    {% block body %}{% endblock %}
+                </div>
+            </div>
+            
+            {% include 'responsable/footer.html.twig' %}
+        </div>
+    </div>
+
+    {% include 'responsable/scripts.html.twig' %}
+    
+    {% block javascripts %}
+        <!-- jQuery (requis par Bootstrap et autres plugins) -->
+        <script src="{{ asset('js/core/jquery-3.7.1.min.js') }}"></script>
+        <!-- Popper.js et Bootstrap JS -->
+        <script src="{{ asset('js/core/popper.min.js') }}"></script>
+        <script src="{{ asset('js/core/bootstrap.min.js') }}"></script>
+        <!-- Plugins -->
+        <script src="{{ asset('js/plugin/jquery-scrollbar/jquery.scrollbar.min.js') }}"></script>
+        <script src="{{ asset('js/plugin/chart.js/chart.min.js') }}"></script>
+        <script src="{{ asset('js/plugin/jquery.sparkline/jquery.sparkline.min.js') }}"></script>
+        <script src="{{ asset('js/plugin/chart-circle/circles.min.js') }}"></script>
+        <script src="{{ asset('js/plugin/datatables/datatables.min.js') }}"></script>
+        <script src="{{ asset('js/plugin/bootstrap-notify/bootstrap-notify.min.js') }}"></script>
+        <script src="{{ asset('js/plugin/jsvectormap/jsvectormap.min.js') }}"></script>
+        <script src="{{ asset('js/plugin/jsvectormap/world.js') }}"></script>
+        <script src="{{ asset('js/plugin/sweetalert/sweetalert.min.js') }}"></script>
+        <!-- Kaiadmin JS -->
+        <script src="{{ asset('js/kaiadmin.min.js') }}"></script>
+        <script>
+            $(document).ready(function() {
+                const searchInput = $('#globalSearchInput');
+                const searchButton = $('#searchButton');
+
+                // Debounce function to limit AJAX requests
+                function debounce(func, wait) {
+                    let timeout;
+                    return function executedFunction(...args) {
+                        const later = () => {
+                            clearTimeout(timeout);
+                            func(...args);
+                        };
+                        clearTimeout(timeout);
+                        timeout = setTimeout(later, wait);
+                    };
+                }
+
+                // Perform team search (non-AJAX, as per original)
+                function performTeamSearch(searchTerm) {
+                    const url = searchTerm 
+                        ? "{{ path('app_equipe_index') }}?search=" + encodeURIComponent(searchTerm)
+                        : "{{ path('app_equipe_index') }}";
+                    window.location.href = url;
+                }
+
+                // Perform event search (AJAX)
+                const performEventSearch = debounce(function(query) {
+                    if (window.location.pathname !== '/events') {
+                        // Redirect to /events with search term if not on events page
+                        window.location.href = "{{ path('app_events_index') }}?search=" + encodeURIComponent(query);
+                        return;
+                    }
+
+                    if (query.length < 2) {
+                        // Reset to full list if query is too short
+                        fetchEvents();
+                        return;
+                    }
+
+                    const url = '{{ path('app_events_search') }}?query=' + encodeURIComponent(query);
+
+                    fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        updateEvents(data);
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        showAlert('Error performing search.', 'danger');
+                    });
+                }, 300);
+
+                // Fetch all events (for reset or initial load)
+                function fetchEvents() {
+                    fetch('{{ path('app_events_index') }}', {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        updateEvents(data);
+                        showPagination();
+                    })
+                    .catch(error => {
+                        console.error('Fetch events error:', error);
+                        showAlert('Error fetching events.', 'danger');
+                    });
+                }
+
+                // Update the events list
+                function updateEvents(events) {
+                    const eventsContainer = document.querySelector('.row');
+                    if (!eventsContainer) return;
+
+                    if (events.length === 0) {
+                        eventsContainer.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-info text-center">
+                                    <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i>
+                                    <h5>No events found</h5>
+                                </div>
+                            </div>
+                        `;
+                        hidePagination();
+                        return;
+                    }
+
+                    let html = '';
+                    events.forEach(event => {
+                        const description = event.description && event.description.length > 80 
+                            ? event.description.substring(0, 80) + '...' 
+                            : event.description || 'N/A';
+                        html += `
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card event-card shadow-sm">
+                                    <img src="${event.imageUrl || '/images/placeholder.jpg'}" 
+                                         class="card-img-top event-image" 
+                                         alt="${event.nom || 'Event'}" 
+                                         onerror="this.src='/images/placeholder.jpg';">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${event.nom || 'Untitled Event'}</h5>
+                                        <p class="text-muted small">
+                                            <i class="fas fa-calendar-alt me-2"></i>
+                                            ${event.date ? new Date(event.date).toLocaleDateString('en-US', { 
+                                                month: 'long', 
+                                                day: 'numeric', 
+                                                year: 'numeric' 
+                                            }) : 'N/A'} at ${event.heureDebut || 'N/A'} - ${event.heureFin || 'N/A'}
+                                        </p>
+                                        <p><strong>Type:</strong> ${event.type ? event.type.charAt(0).toUpperCase() + event.type.slice(1) : 'N/A'}</p>
+                                        <p><strong>Reward:</strong> ${event.reward ? event.reward.charAt(0).toUpperCase() + event.reward.slice(1) : 'N/A'}</p>
+                                        <p><strong>Description:</strong> <span class="event-description">${description}</span></p>
+                                        <p><strong>Location:</strong> ${event.lieu || 'Not specified'}</p>
+                                        <p><strong>Coordinates:</strong> ${event.latitude || 'N/A'}, ${event.longitude || 'N/A'}</p>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="d-flex gap-3 justify-content-center">
+                                            <a href="{{ path('app_events_show', {'id': 0}) }}".replace('0', event.id) 
+                                               class="btn btn-icon btn-outline-secondary rounded-circle" 
+                                               title="Details" 
+                                               data-bs-toggle="tooltip">
+                                                <i class="fas fa-info-circle"></i>
+                                            </a>
+                                            <a href="{{ path('app_events_edit', {'id': 0}) }}".replace('0', event.id) 
+                                               class="btn btn-icon btn-outline-primary rounded-circle" 
+                                               title="Edit" 
+                                               data-bs-toggle="tooltip">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </a>
+                                            <form method="post" 
+                                                  action="{{ path('app_events_delete', {'id': 0}) }}".replace('0', event.id) 
+                                                  onsubmit="return confirm('Are you sure you want to delete this event?');">
+                                                <button class="btn btn-icon btn-outline-danger rounded-circle" 
+                                                        title="Delete" 
+                                                        data-bs-toggle="tooltip">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    eventsContainer.innerHTML = html;
+
+                    // Re-initialize tooltips
+                    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                    tooltipTriggerList.forEach(tooltipTriggerEl => {
+                        new bootstrap.Tooltip(tooltipTriggerEl);
+                    });
+
+                    // Hide pagination during search
+                    hidePagination();
+                }
+
+                // Show alert message
+                function showAlert(message, type) {
+                    const alertContainer = document.querySelector('.container-fluid > .d-flex')?.nextElementSibling;
+                    if (!alertContainer || !alertContainer.classList.contains('alert')) {
+                        const alert = document.createElement('div');
+                        alert.className = `alert alert-${type} alert-dismissible fade show`;
+                        alert.innerHTML = `
+                            ${message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        document.querySelector('.container-fluid > .d-flex').insertAdjacentElement('afterend', alert);
+                        setTimeout(() => alert.remove(), 5000);
+                    }
+                }
+
+                // Hide pagination
+                function hidePagination() {
+                    const pagination = document.querySelector('.card-footer');
+                    if (pagination) {
+                        pagination.style.display = 'none';
+                    }
+                }
+
+                // Show pagination
+                function showPagination() {
+                    const pagination = document.querySelector('.card-footer');
+                    if (pagination) {
+                        pagination.style.display = 'block';
+                    }
+                }
+
+                // Handle search input for events
+                searchInput.on('input', function() {
+                    const searchTerm = this.value.trim();
+                    if (window.location.pathname === '/events') {
+                        performEventSearch(searchTerm);
+                    }
+                });
+
+                // Handle team search on button click or Enter
+                searchButton.on('click', function(e) {
+                    e.preventDefault();
+                    if (window.location.pathname === '/equipe') {
+                        performTeamSearch(searchInput.val().trim());
+                    } else {
+                        performEventSearch(searchInput.val().trim());
+                    }
+                });
+
+                searchInput.on('keypress', function(e) {
+                    if (e.which === 13) { // Enter key
+                        e.preventDefault();
+                        if (window.location.pathname === '/equipe') {
+                            performTeamSearch(this.value.trim());
+                        } else {
+                            performEventSearch(this.value.trim());
+                        }
+                    }
+                });
+
+                // Reset search when input is cleared
+                searchInput.on('change', function() {
+                    if (!this.value.trim() && window.location.pathname === '/events') {
+                        fetchEvents();
+                    }
+                });
+
+                // Refresh events after edit (if redirected from edit page)
+                if (window.location.pathname === '/events' && window.location.search.includes('success')) {
+                    fetchEvents();
+                }
+            });
+        </script>
+    {% endblock %}
+</body>
+</html>

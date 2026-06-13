@@ -1,0 +1,878 @@
+/* Styles de base */
+body {
+    background-color: #000;
+    color: white;
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: flex-start; /* Alignement au début pour permettre l'affichage de la sidebar */
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+/* Conteneur principal de la page */
+.wrapper {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: #333;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    padding-top: 20px;
+    transition: transform 0.3s ease;
+}
+
+.sidebar.closed {
+    transform: translateX(-250px); /* Caché lorsque fermé */
+}
+
+/* Contenu principal */
+.main-panel {
+    flex-grow: 1;
+    margin-left: 250px; /* Espacement pour la sidebar */
+    padding: 20px;
+    background-color: #fff;
+    transition: margin-left 0.3s ease;
+}
+
+.main-panel.sidebar-closed {
+    margin-left: 0; /* Lorsque la sidebar est fermée, le contenu occupe toute la largeur */
+}
+
+/* Conteneur des posts */
+.feed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    margin-left: 250px; /* Décalage du feed à droite lorsque la sidebar est ouverte */
+    transition: margin-left 0.3s ease; /* Transition fluide */
+}
+
+/* Lorsque la sidebar est fermée */
+.main-panel.sidebar-closed .feed {
+    margin-left: 0; /* Le feed occupe toute la largeur quand la sidebar est fermée */
+}
+
+/* Post container */
+.post {
+    width: 100%;
+    max-width: 500px;
+    border-bottom: 1px solid #222;
+    margin: 0;
+    background-color: #222;
+    border-radius: 8px;
+    padding: 10px;
+    box-sizing: border-box;
+    text-align: center; /* Centrer le contenu du post */
+}
+
+/* En-tête du post */
+.post-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.post-header img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+/* Image du post */
+.post-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+/* Styles pour les réactions Facebook */
+.post-actions {
+    display: flex;
+    padding: 4px 0;
+    margin: 0;
+    border-top: 1px solid #CED0D4;
+    border-bottom: 1px solid #CED0D4;
+}
+
+.post-action-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 2px;
+    color: #65676B;
+    font-size: 14px;
+    font-weight: 600;
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin: 0 2px;
+}
+
+.post-action-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.post-action-button i {
+    margin-right: 6px;
+    font-size: 16px;
+}
+
+.reaction-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.reaction-bar {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: white;
+    padding: 5px 8px;
+    border-radius: 30px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    display: flex;
+    gap: 4px;
+    margin-bottom: 5px;
+    z-index: 1000;
+    transition: all 0.2s ease;
+    transform-origin: bottom left;
+}
+
+.react-option {
+    padding: 4px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    font-size: 32px;
+    position: relative;
+}
+
+.react-option:hover {
+    transform: scale(1.5) translateY(-5px);
+}
+
+.reactions-summary {
+    display: flex;
+    align-items: center;
+    padding: 0 12px 8px;
+    gap: 4px;
+    font-size: 14px;
+}
+
+.react-icons {
+    display: flex;
+    align-items: center;
+}
+
+.react-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    margin-left: -4px;
+    background: white;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+}
+
+.react-icon:first-child {
+    margin-left: 0;
+    z-index: 3;
+}
+
+.react-icon:nth-child(2) {
+    z-index: 2;
+}
+
+.react-icon:nth-child(3) {
+    z-index: 1;
+}
+
+.react-count {
+    color: #65676B;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.react-count:hover {
+    text-decoration: underline;
+}
+
+/* Couleurs des réactions */
+.reaction-like { color: #2078f4; }
+.reaction-love { color: #f33e58; }
+.reaction-haha { color: #f7b125; }
+.reaction-wow { color: #f7b125; }
+.reaction-sad { color: #f7b125; }
+.reaction-angry { color: #e9710f; }
+
+/* Animation pour la barre de réactions */
+.reaction-bar.d-none {
+    opacity: 0;
+    transform: scale(0.8) translateY(10px);
+    pointer-events: none;
+}
+
+.reaction-bar {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+/* Tooltip pour les réactions */
+.react-option::after {
+    content: attr(data-reaction);
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.react-option:hover::after {
+    opacity: 1;
+}
+
+/* Style spécifique pour le bouton actif */
+.btn-react-toggle.active {
+    color: #2078f4;
+}
+
+/* Ajustement pour les boutons de réaction */
+.btn-react-toggle {
+    background: none;
+    border: none;
+    padding: 6px 2px;
+    font-size: 14px;
+    color: #65676B;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-react-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Style pour le conteneur des actions */
+.post-actions-container {
+    padding: 0 12px;
+}
+
+/* Media query pour les petits écrans */
+@media (max-width: 768px) {
+    .feed {
+        margin-left: 0; /* Sur les petits écrans, le feed occupe toute la largeur */
+    }
+
+    .post {
+        max-width: 100%;
+        padding: 15px;
+    }
+
+    .post-header img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .post-actions {
+        font-size: 18px;
+    }
+
+    .post-content {
+        font-size: 14px;
+    }
+
+    .main-panel {
+        margin-left: 0; /* Sur les petits écrans, la sidebar disparaît */
+    }
+
+    .sidebar {
+        width: 100%;
+        position: static;
+        transform: translateX(0); /* Sidebar complètement visible */
+    }
+}
+
+/* Media query pour les très petits écrans */
+@media (max-width: 480px) {
+    .post {
+        padding: 10px;
+    }
+
+    .post-header img {
+        width: 30px;
+        height: 30px;
+    }
+
+    .post-actions {
+        font-size: 16px;
+    }
+
+    .post-content {
+        font-size: 12px;
+    }
+
+    .post-actions i {
+        font-size: 18px; /* Réduire la taille des icônes sur les petits écrans */
+    }
+
+    .reaction-actions { position: relative; display: inline-block; }
+
+    .react-bar {
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 24px;
+        padding: 4px 8px;
+        display: flex;
+        gap: 6px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        top: -50px;
+        left: 0;
+        z-index: 100;
+    }
+
+    .react-option { cursor: pointer; font-size: 20px; }
+
+    .btn-react-toggle:hover + .react-bar,
+    .react-bar:hover {
+        display: flex !important;
+    }
+
+    .react-icons { display: inline-flex; gap: 4px; }
+
+    .react-count { margin-left: 6px; font-size: 0.9em; color: #555; }
+
+
+    .reaction-container {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .reaction-bar {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        padding: 5px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        display: flex;
+        gap: 5px;
+        z-index: 1000;
+    }
+    
+    .react-option {
+        font-size: 1.5em;
+        cursor: pointer;
+        transition: transform 0.2s;
+        padding: 5px;
+        border-radius: 50%;
+    }
+    
+    .react-option:hover {
+        transform: scale(1.2);
+    }
+    
+    .reactions-summary {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .react-icons {
+        display: flex;
+        gap: 2px;
+    }
+    
+    .react-icon {
+        font-size: 1.2em;
+    }
+    
+    .react-count {
+        color: #65676B;
+        font-size: 0.9em;
+    }
+    
+    .btn-react-toggle {
+        background: none;
+        border: none;
+        color: #65676B;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .btn-react-toggle:hover {
+        background-color: rgba(0,0,0,0.05);
+    }
+}
+
+/* Updated positioning for reaction bar */
+.post-buttons-container {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    margin-top: 15px !important;
+    width: 100% !important;
+    position: relative !important;
+}
+
+.post-buttons-container > * {
+    flex: 1 !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+}
+
+.btn-post-action, 
+.btn-react-toggle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 4px !important;
+    padding: 6px !important;
+    font-size: 14px !important;
+    height: 36px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+}
+
+.reaction-bar {
+    position: absolute !important;
+    top: -45px !important;
+    left: 50% !important; /* Will be adjusted by JavaScript */
+    transform: translateX(-50%) !important;
+    background: white !important;
+    border-radius: 20px !important;
+    padding: 5px 10px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    gap: 5px !important;
+}
+
+.comment-count {
+    font-size: 12px !important;
+    margin-left: 3px !important;
+}
+
+/* Media queries to ensure proper alignment on smaller screens */
+@media (max-width: 768px) {
+    .post-buttons-container {
+        flex-wrap: wrap !important;
+    }
+    
+    .post-buttons-container > * {
+        flex-basis: calc(33.33% - 4px) !important;
+        margin-bottom: 6px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .btn-post-action, 
+    .btn-react-toggle {
+        padding: 4px !important;
+        font-size: 12px !important;
+    }
+    
+    .comment-count {
+        display: none !important;
+    }
+}
+
+/* Styling for the reaction count in buttons */
+.reaction-count {
+    font-size: 12px !important;
+    margin-left: 3px !important;
+    font-weight: normal !important;
+}
+
+.btn-react-toggle .reaction-count {
+    opacity: 0.9 !important;
+}
+
+.btn-react-toggle.active .reaction-count {
+    color: inherit !important;
+}
+
+/* Ensure buttons with counts have proper spacing */
+.btn-post-action i + .reaction-count,
+.btn-post-action span + .reaction-count {
+    margin-left: 5px !important;
+}
+
+/* Increase size of reaction icons */
+.btn-react-toggle span[class^="reaction-"] {
+    font-size: 24px !important;
+    line-height: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.btn-react-toggle i.far {
+    font-size: 20px !important;
+}
+
+/* Make reaction options larger in the reaction bar */
+.reaction-bar {
+    position: absolute !important;
+    top: -60px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    background: white !important;
+    border-radius: 30px !important;
+    padding: 10px 16px !important;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.25) !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    gap: 10px !important;
+}
+
+.react-option {
+    font-size: 28px !important;
+    cursor: pointer !important;
+    transition: transform 0.2s ease, filter 0.2s ease !important;
+    padding: 3px !important;
+}
+
+.react-option:hover {
+    transform: scale(1.5) translateY(-5px) !important;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2)) !important;
+}
+
+/* Enhance count styling */
+.comment-count, 
+.reaction-count {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    margin-left: 6px !important;
+    opacity: 0.9 !important;
+    min-width: 14px !important;
+}
+
+/* Make sure buttons have enough space for larger icons */
+.btn-post-action, 
+.btn-react-toggle {
+    padding: 6px 12px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+}
+
+/* Breadcrumb styling */
+.breadcrumb-container {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.breadcrumb {
+    background-color: #f8f9fa !important;
+    padding: 10px 15px !important;
+    border-radius: 5px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+}
+
+.breadcrumb-item a {
+    color: #007bff !important;
+    text-decoration: none !important;
+    transition: color 0.2s ease !important;
+}
+
+.breadcrumb-item a:hover {
+    color: #0056b3 !important;
+    text-decoration: underline !important;
+}
+
+.breadcrumb-item.active {
+    color: #6c757d !important;
+    font-weight: 500 !important;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    color: #6c757d !important;
+}
+
+/* Pagination styling */
+.pagination {
+    margin: 0;
+}
+
+.pagination .page {
+    margin: 0 2px;
+}
+
+.pagination .page a,
+.pagination .page span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.pagination .page a {
+    background-color: #f8f9fa;
+    color: #007bff;
+    border: 1px solid #dee2e6;
+}
+
+.pagination .page a:hover {
+    background-color: #e9ecef;
+    color: #0056b3;
+    z-index: 2;
+}
+
+.pagination .page.active span {
+    background-color: #007bff;
+    color: #fff;
+    border: 1px solid #007bff;
+    z-index: 3;
+}
+
+.pagination .page.disabled span {
+    color: #6c757d;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+}
+
+/* For post show view (comment pagination) */
+.overflow-auto .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* Filter form styling */
+.card.shadow-sm {
+    border-radius: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card.shadow-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 15px 20px;
+}
+
+.card-header h5 {
+    margin-bottom: 0;
+    font-weight: 600;
+    color: #495057;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Form elements styling */
+.form-control, .form-select {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    padding: 10px 12px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+/* Button styling */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    border-radius: 6px;
+    padding: 10px 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 105, 217, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 15px;
+    }
+    
+    .form-control, .form-select {
+        padding: 8px 10px;
+    }
+    
+    .btn-primary {
+        padding: 8px 12px;
+    }
+}
+
+/* Styles pour le bouton de filtrage */
+#show-filters-btn {
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#show-filters-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+#show-filters-btn::before {
+    content: "\f0b0";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+}
+
+/* Styles pour le conteneur de formulaire de filtrage */
+#filter-form-container {
+    transition: all 0.3s ease;
+    overflow: hidden;
+    transform-origin: top;
+}
+
+#filter-form-container.show {
+    animation: slideDown 0.3s forwards;
+}
+
+#filter-form-container.hide {
+    animation: slideUp 0.3s forwards;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+#close-filters-btn {
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#close-filters-btn:hover {
+    background-color: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+/* Styles pour les boutons d'action principaux */
+#show-filters-btn, #create-post-btn {
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-weight: 500 !important;
+    padding: 10px 20px !important;
+    border-radius: 5px !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+}
+
+#show-filters-btn:hover, #create-post-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+#show-filters-btn::before {
+    content: "\f0b0" !important;
+    font-family: "Font Awesome 5 Free" !important;
+    font-weight: 900 !important;
+}
+
+#create-post-btn::before {
+    content: "\f067" !important;
+    font-family: "Font Awesome 5 Free" !important;
+    font-weight: 900 !important;
+}
+

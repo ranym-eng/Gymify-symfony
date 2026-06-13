@@ -1,0 +1,133 @@
+{% extends 'responsable/homepage_responsable.html.twig' %}
+
+{% block title %}Edit Subscription{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4 animate__animated animate__fadeIn">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="text-primary mb-1 fw-bold">Edit Subscription</h1>
+            <p class="text-muted">Update subscription details</p>
+        </div>
+        <a href="{{ path('responsable_abonnement_index') }}" class="btn btn-outline-secondary rounded-pill">
+            <i class="fas fa-arrow-left me-2"></i> Back to List
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0"><i class="fas fa-edit text-primary me-2"></i> Subscription Details</h5>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_label(form.type) }}
+                                    <div class="invalid-feedback">
+                                        Please select a subscription type
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form_widget(form.tarif, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_label(form.tarif) }}
+                                    <div class="invalid-feedback">
+                                        Please enter a valid price
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form_widget(form.activite, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_label(form.activite) }}
+                                    <div class="invalid-feedback">
+                                        Please select an activity
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form_widget(form.salle, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_label(form.salle) }}
+                                    <div class="invalid-feedback">
+                                        Please select a location
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+                            <a href="{{ path('responsable_abonnement_index') }}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                                Cancel
+                            </a>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #ffffff;
+    }
+    .text-primary {
+        color: #3f51b5 !important;
+    }
+    .btn-primary {
+        background-color: #3f51b5;
+        border-color: #3f51b5;
+    }
+    .btn-primary:hover {
+        background-color: #303f9f;
+        border-color: #303f9f;
+    }
+    .form-floating label {
+        color: #6c757d;
+    }
+    .form-control {
+        border-radius: 8px;
+        padding: 1rem 0.75rem;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s;
+    }
+    .form-control:focus {
+        border-color: #3f51b5;
+        box-shadow: 0 0 0 0.25rem rgba(63, 81, 181, 0.15);
+    }
+    .invalid-feedback {
+        font-size: 0.875rem;
+    }
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+</style>
+
+<script>
+    // Form validation
+    document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('.needs-validation');
+        
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+</script>
+{% endblock %}

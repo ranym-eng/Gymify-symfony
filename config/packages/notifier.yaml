@@ -1,0 +1,15 @@
+framework:
+    notifier:
+        chatter_transports:
+            slack: '%env(SLACK_DSN)%'
+            # Si vous utilisez d'autres canaux comme Slack, configurez-les ici
+        texter_transports:
+            twilio: '%env(TWILIO_DSN)%'
+            # Pour SMS, si nécessaire
+        notification_on_failed_messages: false
+        channel_policy:
+            # Définir les canaux pour différents niveaux d'importance
+            urgent: ['email']
+            high: ['email']
+            medium: ['email']
+            low: ['email']

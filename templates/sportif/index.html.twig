@@ -1,0 +1,292 @@
+{% extends 'sportif/base.html.twig' %}
+
+{% block body %}
+    <!-- Hero Section Begin -->
+    <section class="hero-section">
+        <div class="hs-slider owl-carousel">
+            <div class="hs-item set-bg" data-setbg="{{ asset('img/hero/hero-1.jpg') }}">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-6 offset-lg-6">
+                            <div class="hi-text">
+                                <span>Shape your body</span>
+                                <h1>Be <strong>strong</strong> training hard</h1>
+                                <a href="{{path('app_infosportif')}}" class="primary-btn">See info</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hs-item set-bg" data-setbg="{{ asset('img/hero/hero-2.jpg') }}">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-6 offset-lg-6">
+                            <div class="hi-text">
+                                <span>Shape your body</span>
+                                <h1>Be <strong>strong</strong> training hard</h1>
+                                <a href="{{path('app_infosportif')}}" class="primary-btn">info</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Hero Section End -->
+
+    <!-- ChoseUs Section Begin -->
+    <section class="choseus-section spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <span>Why choose us?</span>
+                        <h2>PUSH YOUR LIMITS FORWARD</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-sm-6">
+                    <div class="cs-item">
+                        <span class="flaticon-034-stationary-bike"></span>
+                        <h4>Modern equipment</h4>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut dolore facilisis.</p>
+                    </div>
+                </div>
+                <!-- Other choseus items... -->
+            </div>
+        </div>
+    </section>
+    <!-- ChoseUs Section End -->
+
+    <!-- Gym Rooms Section Begin -->
+    <section class="gym-rooms-section spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <span>Explore Our Spaces</span>
+                        <h2>OUR GYM ROOMS</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="gym-rooms-container">
+                {% if salles is empty %}
+                    <div class="col-12 text-center">
+                        <p class="text-muted">No gym rooms available at the moment.</p>
+                    </div>
+                {% else %}
+                    {% for salle in salles %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="gym-room-card">
+                                <div class="gym-room-image">
+                                    {% if salle.urlPhoto %}
+                                        <img src="{{ asset('uploads/images/' ~ salle.urlPhoto) }}" alt="{{ salle.nom }}">
+                                    {% else %}
+                                        <img src="{{ asset('img/placeholder-gym.jpg') }}" alt="Default Gym Image">
+                                    {% endif %}
+                                    <div class="gym-room-overlay">
+                                       <a href="{{ path('sportif_salle_details', {'id': salle.id}) }}" class="primary-btn">View More</a>
+                                    </div>
+                                </div>
+                                <div class="gym-room-content">
+                                    <h4>{{ salle.nom }}</h4>
+                                    <p>{{ salle.details|length > 100 ? salle.details|slice(0, 100) ~ '...' : salle.details }}</p>
+                                    <div class="gym-room-meta">
+                                        <span><i class="fa fa-map-marker"></i> {{ salle.adresse }}</span>
+                                        <span><i class="fa fa-user"></i> {{ salle.responsable ? salle.responsable.nom : 'N/A' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    <!-- Gym Rooms Section End -->
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Gym Rooms Section */
+        .gym-rooms-section {
+            padding: 80px 0;
+            background: #f8f9fa;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title span {
+            font-family: 'Oswald', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            color: #f36100;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .section-title h2 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 40px;
+            font-weight: 700;
+            color: #111;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .gym-room-card {
+            background: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .gym-room-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .gym-room-image {
+            position: relative;
+            overflow: hidden;
+            height: 250px;
+        }
+
+        .gym-room-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .gym-room-card:hover .gym-room-image img {
+            transform: scale(1.1);
+        }
+
+        .gym-room-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .gym-room-card:hover .gym-room-overlay {
+            opacity: 1;
+        }
+
+        .gym-room-overlay .primary-btn {
+            background: #f36100;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background 0.3s ease;
+        }
+
+        .gym-room-overlay .primary-btn:hover {
+            background: #e04e00;
+        }
+
+        .gym-room-content {
+            padding: 20px;
+        }
+
+        .gym-room-content h4 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: #111;
+            margin-bottom: 10px;
+        }
+
+        .gym-room-content p {
+            font-family: 'Muli', sans-serif;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .gym-room-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-family: 'Muli', sans-serif;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .gym-room-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .gym-room-meta i {
+            color: #f36100;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .gym-room-image {
+                height: 200px;
+            }
+
+            .section-title h2 {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .gym-room-card {
+                margin-bottom: 20px;
+            }
+
+            .gym-room-image {
+                height: 180px;
+            }
+
+            .section-title h2 {
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .gym-room-image {
+                height: 150px;
+            }
+
+            .section-title h2 {
+                font-size: 24px;
+            }
+
+            .gym-room-content h4 {
+                font-size: 18px;
+            }
+
+            .gym-room-content p {
+                font-size: 13px;
+            }
+        }
+    </style>
+{% endblock %}

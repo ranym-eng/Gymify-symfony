@@ -1,0 +1,70 @@
+<!-- Core JS Files -->
+<script src="{{ asset('js/core/jquery-3.7.1.min.js') }}"></script>
+<script src="{{ asset('js/core/popper.min.js') }}"></script>
+<script src="{{ asset('js/core/bootstrap.min.js') }}"></script>
+
+<!-- Plugins -->
+<script src="{{ asset('js/plugin/jquery-scrollbar/jquery.scrollbar.min.js') }}"></script>
+<script src="{{ asset('js/plugin/chart.js/chart.min.js') }}"></script>
+<script src="{{ asset('js/plugin/jquery.sparkline/jquery.sparkline.min.js') }}"></script>
+<script src="{{ asset('js/plugin/chart-circle/circles.min.js') }}"></script>
+<script src="{{ asset('js/plugin/datatables/datatables.min.js') }}"></script>
+<script src="{{ asset('js/plugin/bootstrap-notify/bootstrap-notify.min.js') }}"></script>
+<script src="{{ asset('js/plugin/jsvectormap/jsvectormap.min.js') }}"></script>
+<script src="{{ asset('js/plugin/jsvectormap/world.js') }}"></script>
+<script src="{{ asset('js/plugin/sweetalert/sweetalert.min.js') }}"></script>
+
+<!-- Kaiadmin JS -->
+<script src="{{ asset('js/kaiadmin.min.js') }}"></script>
+
+<!-- Initialisation des composants -->
+<script>
+$(document).ready(function() {
+    // Initialisation des graphiques
+    if ($('#statisticsChart').length) {
+        var statisticsChart = new Chart($('#statisticsChart'), {
+            type: 'line',
+            data: {
+                labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+                datasets: [{
+                    label: "Visitors",
+                    borderColor: '#177dff',
+                    data: [450, 860, 1100, 1250, 980, 1200]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    // Initialisation des sparklines
+    $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
+        type: "line",
+        height: "70",
+        width: "100%",
+        lineWidth: "2",
+        lineColor: "#177dff",
+        fillColor: "rgba(23, 125, 255, 0.14)",
+    });
+});
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll(".load-page").forEach(link => {
+            link.addEventListener("click", function(event) {
+                event.preventDefault();
+                let url = this.getAttribute("data-url");
+
+                fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+                    .then(response => response.text())
+                    .then(html => {
+                        document.querySelector(".page-inner").innerHTML = html;
+                        window.history.pushState(null, "", url);
+                    })
+                    .catch(error => console.error("Error loading page:", error));
+            });
+        });
+    });
+</script>

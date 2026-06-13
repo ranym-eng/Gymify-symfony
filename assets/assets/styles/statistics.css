@@ -1,0 +1,106 @@
+/* Statistics page styling */
+.stats-container {
+    padding: 1.5rem 0;
+}
+
+.page-title {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.page-title h4 {
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.page-title p {
+    color: #666;
+    font-size: 1rem;
+}
+
+.stats-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.stats-card-header {
+    background-color: #f8f9fa;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.stats-card-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.stats-card-body {
+    padding: 1.25rem;
+}
+
+.stats-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.stats-legend-item {
+    display: flex;
+    align-items: center;
+    margin: 0.25rem 0.75rem;
+}
+
+.stats-legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    margin-right: 0.5rem;
+}
+
+.stats-legend-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* Make charts responsive */
+canvas {
+    max-width: 100%;
+    height: auto !important;
+}
+
+@media (max-width: 768px) {
+    .stats-card-body {
+        padding: 1rem;
+    }
+    
+    .stats-card-title {
+        font-size: 1rem;
+    }
+}
+
+/* Custom colors for each chart type */
+.posts-chart .stats-card-header {
+    background-color: rgba(54, 162, 235, 0.1);
+}
+
+.comments-chart .stats-card-header {
+    background-color: rgba(255, 99, 132, 0.1);
+}
+
+.reactions-chart .stats-card-header {
+    background-color: rgba(255, 205, 86, 0.1);
+} 

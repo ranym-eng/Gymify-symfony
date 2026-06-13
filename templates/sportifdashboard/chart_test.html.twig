@@ -1,0 +1,65 @@
+{% extends 'sportifdashboard/homepagesportif.html.twig' %}
+
+{% block title %}Test Chart{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Chart.js Test</h4>
+                </div>
+                <div class="card-body">
+                    <div style="height: 400px;">
+                        <canvas id="testChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/debug-chart.js') }}"></script>
+    <script>
+        // Simple direct Chart.js initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                if (typeof Chart === 'undefined') {
+                    console.log('Loading Chart.js from CDN');
+                    var script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+                    script.onload = createTestChart;
+                    document.head.appendChild(script);
+                } else {
+                    createTestChart();
+                }
+            }, 500); // Wait for DOM and other scripts
+
+            function createTestChart() {
+                var ctx = document.getElementById('testChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+                        datasets: [{
+                            label: 'Test Data',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgb(54, 162, 235)',
+                            data: [10, 15, 20, 25, 30, 35, 40],
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+                console.log('Test chart created');
+            }
+        });
+    </script>
+{% endblock %} 

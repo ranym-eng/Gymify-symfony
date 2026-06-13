@@ -1,0 +1,314 @@
+{% extends 'responsable/homepage_responsable.html.twig' %}
+
+{% block title %}Add a User{% endblock %}
+
+{% block body %}
+    <!-- Load Tailwind CSS, Poppins Font, and Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <div class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 py-12 px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="max-w-4xl mx-auto mb-8">
+            <div class="flex justify-between items-center">
+                <h1 class="text-4xl font-bold text-gray-800 flex items-center animate-fade-in">
+                    <i class="fas fa-user-plus mr-3 text-indigo-600"></i>Add a User
+                </h1>
+                <a href="{{ path('responsable_user_index') }}" class="inline-flex items-center bg-white text-indigo-600 font-semibold py-2 px-4 rounded-full shadow-md hover:bg-indigo-50 hover:scale-105 transition-all duration-300">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to List
+                </a>
+            </div>
+
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mt-6 animate-fade-in">
+                <ol class="flex space-x-2 bg-white p-4 rounded-xl shadow-sm text-sm">
+                    <li class="flex items-center">
+                        <a href="{{ path('app_responsable_dashboard') }}" class="text-indigo-600 hover:underline"><i class="fas fa-home mr-1"></i> Dashboard</a>
+                    </li>
+                    <li class="flex items-center"><span class="text-gray-500">/</span></li>
+                    <li class="flex items-center">
+                        <a href="{{ path('responsable_user_index') }}" class="text-indigo-600 hover:underline"><i class="fas fa-users mr-1"></i> Users</a>
+                    </li>
+                    <li class="flex items-center"><span class="text-gray-500">/</span></li>
+                    <li class="flex items-center text-gray-700"><i class="fas fa-plus mr-1"></i> Add</li>
+                </ol>
+            </nav>
+        </div>
+
+        <!-- Flash Messages -->
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="fixed top-6 right-6 z-50 max-w-sm w-full bg-white rounded-lg shadow-lg p-4 animate-slide-in border-l-4 {{ label == 'success' ? 'border-green-500' : 'border-red-500' }}">
+                    <div class="flex items-center">
+                        <i class="fas fa-{{ label == 'success' ? 'check-circle' : 'exclamation-triangle' }} {{ label == 'success' ? 'text-green-500' : 'text-red-500' }} mr-3 text-lg"></i>
+                        <span class="text-gray-800">{{ message }}</span>
+                        <button type="button" class="ml-auto text-gray-500 hover:text-gray-700" data-bs-dismiss="alert" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <!-- Form Card -->
+        <div class="max-w-2xl mx-auto animate-fade-in">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex justify-between items-center">
+                    <h5 class="text-xl font-semibold text-white flex items-center">
+                        <i class="fas fa-user-plus mr-2"></i>Creation Form
+                    </h5>
+                    <span class="bg-white text-indigo-600 text-sm font-medium px-3 py-1 rounded-full flex items-center">
+                        <i class="fas fa-info-circle mr-1"></i> Required Fields (*)
+                    </span>
+                </div>
+                <div class="p-6 sm:p-8 bg-gray-50">
+                    {{ form_start(form, {'attr': {'class': 'space-y-6 needs-validation', 'novalidate': '', 'id': 'user-form'}}) }}
+                    
+                    <!-- Name Fields -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ form.nom.vars.id }}" class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                            {{ form_widget(form.nom, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300', 'placeholder': 'Last Name'}}) }}
+                            <div class="text-red-500 text-sm mt-1">{{ form_errors(form.nom) }}</div>
+                        </div>
+                        <div>
+                            <label for="{{ form.prenom.vars.id }}" class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                            {{ form_widget(form.prenom, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300', 'placeholder': 'First Name'}}) }}
+                            <div class="text-red-500 text-sm mt-1">{{ form_errors(form.prenom) }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Email and Date of Birth -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ form.email.vars.id }}" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                            {{ form_widget(form.email, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300', 'placeholder': 'Email'}}) }}
+                            <div class="text-red-500 text-sm mt-1">{{ form_errors(form.email) }}</div>
+                            <div class="valid-feedback text-green-500 text-sm mt-1 hidden"><i class="fas fa-check-circle mr-1"></i> Valid Email</div>
+                        </div>
+                        <div>
+                            <label for="{{ form.dateNaissance.vars.id }}" class="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
+                            {{ form_widget(form.dateNaissance, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 datepicker', 'placeholder': 'Date of Birth'}}) }}
+                            <div class="text-red-500 text-sm mt-1">{{ form_errors(form.dateNaissance) }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Password and Role -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ form.password.vars.id }}" class="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                            {{ form_widget(form.password, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 password-input', 'placeholder': 'Password'}}) }}
+                            <div class="text-red-500 text-sm mt-1">{{ form_errors(form.password) }}</div>
+                            <div class="password-strength mt-3">
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="progress-bar h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                                <div class="flex justify-between text-sm mt-2 text-gray-600">
+                                    <span class="password-strength-text">Weak</span>
+                                    <span><i class="fas fa-eye-slash toggle-password cursor-pointer"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="{{ form.role.vars.id }}" class="block text-sm font-medium text-gray-700 mb-1">Role *</label>
+                            {{ form_widget(form.role, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 role-select', 'placeholder': 'Role'}}) }}
+                            <div class="text-red-500 text-sm mt-1">{{ form_errors(form.role) }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Specialty Field (Hidden by Default) -->
+                    <div id="specialite_container" class="hidden">
+                        <label for="{{ form.specialite.vars.id }}" class="block text-sm font-medium text-gray-700 mb-1">Specialty *</label>
+                        {{ form_widget(form.specialite, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300', 'placeholder': 'Specialty'}}) }}
+                            <div class="text-red-500 text-sm mt-1">{{ form_errors(form.specialite) }}</div>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Profile Picture <span class="text-gray-500 text-xs">(Optional)</span></label>
+                        <div class="image-upload-wrapper">
+                            <button type="button" class="upload-btn inline-flex items-center bg-white border border-indigo-600 text-indigo-600 font-semibold py-2 px-4 rounded-full hover:bg-indigo-50 hover:scale-105 transition-all duration-300">
+                                <i class="fas fa-upload mr-2"></i>Upload an Image
+                            </button>
+                            {{ form_widget(form.imageUrl, {'attr': {'class': 'hidden', 'accept': 'image/jpeg,image/png,image/webp,image/gif'}}) }}
+                            <div class="mt-4 text-center relative">
+                                <img id="image-preview" class="rounded-full w-32 h-32 object-cover shadow-md hidden" alt="Image Preview">
+                                <button id="remove-image" class="hidden absolute top-0 right-10 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-red-600 transition-all duration-300">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="text-gray-600 text-sm mt-2">Accepted formats: JPG, PNG, WebP, GIF (max 2MB)</div>
+                            <div id="image-error" class="text-red-500 text-sm mt-1 hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex justify-end">
+                        <button type="submit" class="inline-flex items-center bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-indigo-700 hover:scale-105 transition-all duration-300">
+                            <i class="fas fa-save mr-2"></i>Save
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+
+        /* Custom Styles for Password Strength Bar */
+        .password-strength .progress-bar {
+            transition: width 0.5s ease, background-color 0.5s ease;
+        }
+
+        /* Datepicker Icon */
+        .datepicker {
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z'/%3E%3C/svg%3E") no-repeat right 1rem center/16px 16px;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Specialty field toggle based on role
+            const roleSelect = document.querySelector('#user_role');
+            const specialiteContainer = document.querySelector('#specialite_container');
+            
+            const toggleSpecialite = () => {
+                const isEntraineur = roleSelect.value === 'entraineur';
+                specialiteContainer.classList.toggle('hidden', !isEntraineur);
+                document.querySelector('#user_specialite').required = isEntraineur;
+            };
+            roleSelect.addEventListener('change', toggleSpecialite);
+            toggleSpecialite();
+
+            // Image upload handling
+            const imageInput = document.querySelector('#user_imageUrl');
+            const imagePreview = document.querySelector('#image-preview');
+            const removeImageBtn = document.querySelector('#remove-image');
+            const uploadBtn = document.querySelector('.upload-btn');
+            const imageError = document.querySelector('#image-error');
+
+            uploadBtn.addEventListener('click', () => imageInput.click());
+
+            imageInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    // Validate file type
+                    if (!file.type.match('image.*')) {
+                        showImageError('Please select a valid image file');
+                        return;
+                    }
+                    // Validate file size
+                    if (file.size > 2 * 1024 * 1024) {
+                        showImageError('The image must not exceed 2MB');
+                        return;
+                    }
+                    updateImagePreview(file);
+                }
+            });
+
+            function showImageError(message) {
+                imageError.textContent = message;
+                imageError.classList.remove('hidden');
+            }
+
+            function updateImagePreview(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.remove('hidden');
+                    removeImageBtn.classList.remove('hidden');
+                    imageError.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            removeImageBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                imageInput.value = '';
+                imagePreview.classList.add('hidden');
+                removeImageBtn.classList.add('hidden');
+                imageError.classList.add('hidden');
+            });
+
+            // Password strength indicator
+            const passwordInput = document.querySelector('.password-input');
+            if (passwordInput) {
+                const progressBar = document.querySelector('.password-strength .progress-bar');
+                const strengthText = document.querySelector('.password-strength-text');
+                
+                passwordInput.addEventListener('input', function() {
+                    const password = this.value;
+                    let strength = 0;
+                    if (password.length >= 8) strength += 1;
+                    if (password.length >= 12) strength += 1;
+                    if (/[A-Z]/.test(password)) strength += 1;
+                    if (/[0-9]/.test(password)) strength += 1;
+                    if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+                    
+                    const width = strength * 20;
+                    progressBar.style.width = `${width}%`;
+                    
+                    let color, text;
+                    if (strength <= 1) {
+                        color = '#dc3545';
+                        text = 'Weak';
+                    } else if (strength <= 3) {
+                        color = '#fd7e14';
+                        text = 'Medium';
+                    } else {
+                        color = '#28a745';
+                        text = 'Strong';
+                    }
+                    progressBar.style.backgroundColor = color;
+                    strengthText.textContent = text;
+                });
+            }
+
+            // Toggle password visibility
+            const togglePassword = document.querySelector('.toggle-password');
+            if (togglePassword) {
+                togglePassword.addEventListener('click', function() {
+                    const type = passwordInput.type === 'password' ? 'text' : 'password';
+                    passwordInput.type = type;
+                    this.classList.toggle('fa-eye-slash');
+                    this.classList.toggle('fa-eye');
+                });
+            }
+
+            // Form validation
+            const form = document.querySelector('#user-form');
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+        });
+    </script>
+{% endblock %}

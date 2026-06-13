@@ -1,0 +1,380 @@
+{% extends 'entraineur/homepageentraineur.html.twig' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block body %}
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold mb-1">{{ page_title }}</h1>
+                <p class="text-muted mb-0">Gestion des cours</p>
+            </div>
+            <a href="{{ path('app_cours_new', {'idPlanning': idPlanning}) }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i> Nouveau cours
+            </a>
+        </div>
+
+        <!-- Champ de recherche -->
+        
+
+        <!-- Calendrier amélioré -->
+        <div class="calendar-container mb-4">
+            <div class="swiper calendar-swiper">
+                <div class="swiper-wrapper">
+                    {% for jour in joursCalendrier %}
+                        <div class="swiper-slide calendar-day 
+                            {% if jour|date('Y-m-d') == "now"|date('Y-m-d') %}active{% endif %}
+                            {% if jour|date('Y-m-d') in datesAvecCours %}has-cours{% endif %}" 
+                            data-date="{{ jour|date('Y-m-d') }}"
+                            role="button"
+                            aria-label="Sélectionner le {{ jour|date('d F Y') }}"
+                            tabindex="0">
+                            <div class="day-name">{{ jour|date('D')|trans }}</div>
+                            <div class="day-number">{{ jour|date('d') }}</div>
+                            <div class="day-month">{{ jour|date('M')|trans }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+            <div class="card-body p-0">
+                {% if cours|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 py-3">Titre</th>
+                                    <th class="py-3">Description</th>
+                                    <th class="py-3">Objectif</th>
+                                    <th class="py-3">Date</th>
+                                    <th class="py-3">Heures</th>
+                                    <th class="py-3">Activité</th>
+                                    <th class="py-3">Salle</th>
+                                    <th class="py-3">État</th>
+                                    <th class="pe-4 py-3 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cour in cours %}
+                                    <tr class="border-bottom" data-date="{{ cour.dateDebut|date('Y-m-d') }}">
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="icon-shape icon-sm bg-primary-soft text-primary rounded-circle me-3">
+                                                    <i class="fas fa-book-open"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">{{ cour.title }}</h6>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <p class="text-sm text-muted mb-0">
+                                                {{ cour.description|slice(0, 50) }}{% if cour.description|length > 50 %}...{% endif %}
+                                            </p>
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="badge bg-primary-soft text-primary">
+                                                {{ cour.objectif.value }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="text-sm">{{ cour.dateDebut|date('d/m/Y') }}</span>
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="text-sm">{{ cour.heurDebut|date('H:i') }} - {{ cour.heurFin|date('H:i') }}</span>
+                                        </td>
+                                        <td class="py-3">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-info-soft text-info me-2">
+                                                    {{ cour.activité.nom }}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="text-sm">{{ cour.salle.nom }}</span>
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="badge 
+                                                {% if cour.etat == 'Terminé' %}bg-danger
+                                                {% elseif cour.etat starts with 'Début il y a' %}bg-success
+                                                {% elseif cour.etat starts with 'Début dans' %}bg-warning
+                                                {% else %}bg-info{% endif %}">
+                                                {{ cour.etat }}
+                                            </span>
+                                        </td>
+                                        <td class="pe-4 py-3 text-end">
+                                            <div class="btn-group">
+                                                <a href="{{ path('app_cours_edit', {'id': cour.id}) }}" 
+                                                   class="btn btn-sm btn-outline-primary rounded-circle me-1" 
+                                                   title="Modifier">
+                                                    <i class="fas fa-pencil-alt"></i>
+                                                </a>
+                                                <form action="{{ path('app_cours_delete', {'id': cour.id}) }}" method="POST" class="d-inline" id="deleteForm{{ cour.id }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ cour.id) }}">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" 
+                                                            data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                                            data-form-id="deleteForm{{ cour.id }}"
+                                                            title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="py-5">
+                            <i class="fas fa-book-open fa-4x text-muted mb-4"></i>
+                            <h4 class="fw-bold">Aucun cours trouvé</h4>
+                            <p class="text-muted">Commencez par ajouter un nouveau cours</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Modal de confirmation -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Êtes-vous sûr de vouloir supprimer ce cours ?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-danger" id="confirmDelete">Supprimer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <style>
+        .calendar-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .calendar-swiper {
+            padding: 0 30px;
+            position: relative;
+        }
+        
+        .calendar-day {
+            width: 70px !important;
+            height: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: transparent;
+        }
+        
+        .calendar-day:hover {
+            background: rgba(0, 123, 255, 0.1);
+        }
+        
+        .calendar-day.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .calendar-day.has-cours {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .calendar-day.active.has-cours {
+            background: #007bff;
+            color: white;
+        }
+        
+        .day-name {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .day-number {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        
+        .day-month {
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .swiper-button-next, .swiper-button-prev {
+            color: #007bff;
+            background: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .swiper-button-next::after, .swiper-button-prev::after {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .bg-primary-soft {
+            background-color: rgba(70, 127, 207, 0.1) !important;
+        }
+        
+        .bg-info-soft {
+            background-color: rgba(23, 162, 184, 0.1) !important;
+        }
+        
+        .icon-shape {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .rounded-circle {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 576px) {
+            .calendar-day {
+                width: 50px !important;
+                height: 70px;
+            }
+            .day-name, .day-month {
+                font-size: 10px;
+            }
+            .day-number {
+                font-size: 18px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        function filterCourses() {
+            const searchTerm = document.getElementById('globalSearchInput')?.value.toLowerCase() || '';
+            const selectedDate = document.querySelector('.calendar-day.active')?.getAttribute('data-date') || 'all';
+
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const rowDate = row.getAttribute('data-date');
+                const rowText = row.textContent.toLowerCase();
+
+                const dateMatch = selectedDate === 'all' || rowDate === selectedDate;
+                const searchMatch = searchTerm === '' || rowText.includes(searchTerm);
+
+                row.style.display = (dateMatch && searchMatch) ? '' : 'none';
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Activer les tooltips Bootstrap
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Initialiser le Swiper
+            const calendarSwiper = new Swiper('.calendar-swiper', {
+                slidesPerView: 'auto',
+                spaceBetween: 10,
+                centeredSlides: false,
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                breakpoints: {
+                    768: { slidesPerView: 'auto', spaceBetween: 10 },
+                    992: { slidesPerView: 'auto', spaceBetween: 10 }
+                }
+            });
+
+            // Gestion du clic et du clavier sur les jours
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.addEventListener('click', function() {
+                    document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('active'));
+                    this.classList.add('active');
+                    filterCourses();
+                });
+                day.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('active'));
+                        this.classList.add('active');
+                        filterCourses();
+                    }
+                });
+            });
+
+            // Centrer le jour actuel dans le Swiper
+            const todaySlide = document.querySelector('.calendar-day.active');
+            if (todaySlide) {
+                const slideIndex = Array.from(todaySlide.parentNode.children).indexOf(todaySlide);
+                calendarSwiper.slideTo(slideIndex);
+            }
+
+            // Gestion du modal de suppression
+            document.querySelectorAll('[data-bs-target="#deleteModal"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const formId = this.getAttribute('data-form-id');
+                    document.getElementById('confirmDelete').onclick = function() {
+                        document.getElementById(formId).submit();
+                    };
+                });
+            });
+
+            // Appel initial du filtrage
+            filterCourses();
+        });
+
+        // Écouteur pour la recherche
+        document.getElementById('globalSearchInput')?.addEventListener('input', filterCourses);
+    </script>
+{% endblock %}

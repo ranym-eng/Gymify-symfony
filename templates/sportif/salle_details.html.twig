@@ -1,0 +1,3035 @@
+{% extends 'sportif/base.html.twig' %}
+
+{% block title %}{{ salle.nom }} | Gym{% endblock %}
+
+{% block body %}
+<!-- Notification Modal -->
+    <div class="notification-modal" id="notification-modal">
+        <div class="notification-content">
+            <div class="notification-icon">
+                <i class="fas fa-bell"></i>
+            </div>
+            <h3 class="notification-title">Subscription Reminder</h3>
+            <p class="notification-message"></p>
+            <div class="notification-actions">
+                <button class="notification-btn remind-later">Remind Later</button>
+                <button class="notification-btn cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <!-- Breadcrumb Section -->
+    <section class="breadcrumb-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <div class="breadcrumb-text">
+                        <h2>{{ salle.nom }}</h2>
+                        <nav class="bt-option">
+                            <a href="{{ path('app_home') }}">Home</a>
+                            <span>/</span>
+                            <span>Gym</span>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gym Details Section -->
+    <section class="gym-details-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="gym-image">
+                        {% if salle.urlPhoto %}
+                            <img src="{{ asset('Uploads/images/' ~ salle.urlPhoto) }}" alt="{{ salle.nom }}">
+                        {% else %}
+                            <img src="{{ asset('img/placeholder-gym.jpg') }}" alt="Default Gym Image">
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="gym-content">
+                        <h2>{{ salle.nom }}</h2>
+                        <p>{{ salle.details }}</p>
+                        <ul class="gym-meta">
+                            <li><i class="fas fa-map-marker-alt"></i> {{ salle.adresse }}</li>
+                            <li><i class="fas fa-user"></i> {% if salle.responsable %}{{ salle.responsable.prenom|default('') }} {{ salle.responsable.nom|default('N/A') }}{% else %}No manager{% endif %}</li>
+                            <li><i class="fas fa-phone"></i> {{ salle.numTel }}</li>
+                            <li><i class="fas fa-envelope"></i> {{ salle.email }}</li>
+                        </ul>
+                        <div class="gym-actions">
+                            <a href="#subscriptions" class="primary-btn" data-tooltip="View available subscriptions">Subscriptions</a>
+                            <a href="#events" class="primary-btn" data-tooltip="View upcoming events">Events</a>
+                            <a href="{{ path('app_home') }}" class="primary-btn secondary" data-tooltip="Return to homepage">Back</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Subscriptions Section -->
+    <section id="subscriptions" class="subscriptions-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <span>Our Plans</span>
+                        <h2>Available Subscriptions</h2>
+                    </div>
+                </div>
+            </div>
+
+            {% set uniqueActivites = [] %}
+            {% for abonnement in abonnements|default([]) %}
+                {% if abonnement.activite is not null and abonnement.activite.id not in uniqueActivites|map(a => a.id) %}
+                    {% set uniqueActivites = uniqueActivites|merge([abonnement.activite]) %}
+                {% endif %}
+            {% endfor %}
+
+            {% set activityIcons = {
+                'Yoga': 'fa-spa',
+                'Boxing': 'fa-fist-raised',
+                'Zumba': 'fa-running',
+                'Weightlifting': 'fa-dumbbell',
+                'Cardio': 'fa-heartbeat',
+                'Musculation': 'fa-dumbbell'
+            } %}
+
+            {% if uniqueActivites|length > 0 %}
+                <div class="row">
+                    {% for activite in uniqueActivites %}
+                        {% set abonnementsForActivite = abonnements|filter(a => a.activite.id == activite.id) %}
+                        {% if abonnementsForActivite|length > 0 %}
+                            <div class="col-lg-4 col-md-6">
+                                <div class="activity-card">
+                                    <div class="activity-name">
+                                        <i class="fas {{ activityIcons[activite.nom] ?? 'fa-dumbbell' }}"></i>
+                                        <h3>{{ activite.nom }}</h3>
+                                    </div>
+                                    <div class="subscriptions-container">
+                                        {% for abonnement in abonnementsForActivite %}
+                                            <div class="subscription-card">
+                                                <div class="subscription-header">
+                                                    <h4>{{ abonnement.type.value|capitalize }}</h4>
+                                                    <div class="price">{{ abonnement.tarif }} DT</div>
+                                                </div>
+                                                <div class="subscription-body">
+                                                    <ul class="subscription-features">
+                                                        <li><i class="fas fa-clock"></i> 
+                                                            {% if abonnement.type.value == 'mois' %}30 days
+                                                            {% elseif abonnement.type.value == 'trimestre' %}90 days
+                                                            {% elseif abonnement.type.value == 'année' %}365 days
+                                                            {% else %}Custom{% endif %}
+                                                        </li>
+                                                        <li><i class="fas fa-calendar-alt"></i> {{ abonnement.joursAcces|default([])|join(', ') }}</li>
+                                                    </ul>
+                                                    <button class="subscription-btn" data-abonnement-id="{{ abonnement.id }}" data-abonnement-tarif="{{ abonnement.tarif }}" data-abonnement-type="{{ abonnement.type.value|capitalize }}" data-abonnement-activite="{{ activite.nom }}" data-tooltip="Subscribe to this plan">Subscribe</button>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="col-lg-12 text-center">
+                    <p>No subscriptions available at the moment.</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Payment Modal -->
+    <div class="payment-modal" id="payment-modal">
+        <div class="payment-content">
+            <span class="close-modal">&times;</span>
+            <div class="payment-container">
+                <div class="payment-header">
+                    <h2>Subscription Payment</h2>
+                    <p>Securely complete your subscription</p>
+                </div>
+                <div class="payment-body">
+                    <form id="payment-form">
+                        <div id="card-element"></div>
+                        <button id="submit" type="submit">
+                            <span class="spinner"></span>
+                            Pay <span id="payment-amount"></span> DT
+                        </button>
+                        <div id="error-message"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="confirmation-modal" id="confirmation-modal">
+        <div class="confirmation-content">
+            <span class="close-confirmation">&times;</span>
+            <div class="confirmation-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                </svg>
+            </div>
+            <h3 class="confirmation-title">Payment Successful!</h3>
+            <p>Your subscription has been activated.</p>
+            <div class="confirmation-qr">
+                <p>Scan this QR code to download your confirmation:</p>
+                <div id="confirmation-qr-code"></div>
+            </div>
+            <div class="confirmation-details">
+                <div class="confirmation-detail">
+                    <span class="confirmation-detail-label">Plan Type:</span>
+                    <span class="confirmation-detail-value" id="confirmation-type"></span>
+                </div>
+                <div class="confirmation-detail">
+                    <span class="confirmation-detail-label">Activity:</span>
+                    <span class="confirmation-detail-value" id="confirmation-activity"></span>
+                </div>
+                <div class="confirmation-detail">
+                    <span class="confirmation-detail-label">Start Date:</span>
+                    <span class="confirmation-detail-value" id="confirmation-start"></span>
+                </div>
+                <div class="confirmation-detail">
+                    <span class="confirmation-detail-label">End Date:</span>
+                    <span class="confirmation-detail-value" id="confirmation-end"></span>
+                </div>
+            </div>
+            <button class="confirmation-button" id="confirmation-button">View My Subscriptions</button>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div class="notification-modal" id="notification-modal">
+        <div class="notification-content">
+            <div class="notification-icon">
+                <i class="fas fa-bell"></i>
+            </div>
+            <h3 class="notification-title">Subscription Reminder</h3>
+            <p class="notification-message"></p>
+            <div class="notification-actions">
+                <button class="notification-btn remind-later">Remind Later</button>
+                <button class="notification-btn cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <!-- Events Section -->
+
+<section id="events" class="events-section spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <span>Discover Our</span>
+                        <h2>Available Events</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Display Flash Messages -->
+            {% set errorMessages = app.flashes('error') %}
+            {% if errorMessages is not empty %}
+                <div class="alert alert-danger">
+                    {% for message in errorMessages %}
+                        {% if message|trim is not empty %}
+                            {{ message }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% set successMessages = app.flashes('success') %}
+            {% if successMessages is not empty %}
+                <div class="alert alert-success">
+                    {% for message in successMessages %}
+                        {% if message|trim is not empty %}
+                            {{ message }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="row" id="events-container">
+                {% if grouped_equipe_events|length > 0 %}
+                    {% for group in grouped_equipe_events %}
+                        {% set event = group.event %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="event-card" style="animation-delay: {{ loop.index0 * 0.1 }}s;">
+                                <div class="event-image-wrapper">
+                                    {% if event.imageUrl %}
+                                        <img src="{{ asset('Uploads/events/' ~ event.imageUrl|split('/')|last) }}" alt="{{ event.nom }}" onerror="this.src='{{ asset('img/event-default.jpg') }}'">
+                                    {% else %}
+                                        <img src="{{ asset('img/event-default.jpg') }}" alt="Default Event Image">
+                                    {% endif %}
+                                    <div class="event-overlay">
+                                        <div class="event-type-badge">{{ event.type ? event.type|capitalize : 'Not defined' }}</div>
+                                    </div>
+                                    <div class="event-date">
+                                         <span>{{ event.dateDay ?? 'N/A' }}</span>
+                                         <p>{{ event.dateMonth ?? 'N/A' }}</p>
+
+                                    </div>
+                                </div>
+                                <div class="event-content">
+                                    <h3>{{ event.nom }}</h3>
+                                    <ul class="details-list">
+                                        <li>
+                                            <i class="fa fa-users icon"></i>
+                                            <strong>Teams:</strong>
+                                            <div class="team-list">
+                                                {% for equipeEvent in group.equipeEvents %}
+                                                    <div class="team-item">
+                                                         {{ equipeEvent.equipeNom }}
+                                                    </div>
+                                                {% else %}
+                                                    <div class="team-item text-muted">No teams associated.</div>
+                                                {% endfor %}
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <i class="fa fa-info-circle icon"></i>
+                                            <strong>Description:</strong> {{ event.description|default('No description')|slice(0, 60) ~ '...' }}
+                                        </li>
+                                        <li>
+                                            <i class="fa fa-clock-o icon"></i>
+                                            <strong>Time:</strong> {{ event.heureDebut ? event.heureDebut|date('H:i') : 'N/A' }} - {{ event.heureFin ? event.heureFin|date('H:i') : 'N/A' }}
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-trophy icon reward-icon"></i>
+                                            <strong>Reward:</strong> {{ event.reward.value|default('None')|capitalize }}
+                                        </li>
+                                        <li class="location-item">
+                                            <i class="fa fa-map-marker icon"></i>
+                                            <strong>Location:</strong> <span class="location-text">{{ event.lieu|default('Not specified') }}</span>
+                                        </li>
+                                    </ul>
+                                    <div class="event-actions">
+                                        {% if group.equipeEvents|length == 1 %}
+                                            <a href="{{ path('app_equipe_event_show', {'id': group.equipeEvents[0].id}) }}" class="event-btn" data-tooltip="View event details" aria-label="View details for {{ event.nom }}">
+                                                <i class="fa fa-info-circle me-2"></i>Details
+                                            </a>
+                                            <a href="{{ path('app_equipe_event_join', {'id': group.equipeEvents[0].id}) }}" class="join-btn" data-tooltip="Join this event" aria-label="Join {{ event.nom }}">
+                                                <i class="fas fa-user-plus me-2"></i>Join
+                                            </a>
+                                        {% else %}
+                                            <div class="dropdown">
+                                                <button class="event-btn dropdown-toggle" type="button" id="detailsDropdown-{{ event.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fa fa-info-circle me-2"></i>Details
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="detailsDropdown-{{ event.id }}">
+                                                    {% for equipeEvent in group.equipeEvents %}
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ path('app_equipe_event_show', {'id': equipeEvent.id}) }}">
+                                                                {{ equipeEvent.equipeNom }}
+                                                            </a>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            <div class="dropdown">
+                                                <button class="join-btn dropdown-toggle" type="button" id="joinDropdown-{{ event.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-user-plus me-2"></i>Join
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="joinDropdown-{{ event.id }}">
+                                                    {% for equipeEvent in group.equipeEvents %}
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ path('app_equipe_event_join', {'id': equipeEvent.id}) }}">
+                                                                {{ equipeEvent.equipeNom }}
+                                                            </a>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-lg-12 text-center">
+                        <div class="alert alert-info">
+                            <i class="fa fa-info-circle fa-2x mb-3"></i>
+                            <p>No team events scheduled for this gym currently.</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    <!-- Weather Section -->
+    <section id="weather" class="weather-section spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <span>Check the</span>
+                        <h2>Local Weather</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <!-- Weather Search Form -->
+                    <form method="get" action="{{ path('sportif_salle_details', {'id': salle.id}) }}" class="weather-search-form">
+                        <div class="weather-search-container">
+                            <label for="location" class="sr-only">Enter a city</label>
+                            <input type="text" id="location" name="location" value="{{ location }}" placeholder="Enter a city (e.g., Tunis)" class="weather-search-input">
+                            <button type="submit" class="weather-search-btn" data-tooltip="Search weather" aria-label="Search weather for the entered city">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <button type="button" onclick="getLocation()" class="weather-geo-btn" data-tooltip="Use my current location" aria-label="Get weather for my current location">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% if weatherData %}
+                <div class="weather-widget">
+                    <!-- Current Weather -->
+                    <div class="current-weather">
+                        <div class="weather-header">
+                            <h3>{{ weatherData.location.name }}</h3>
+                            <p class="current-date"><i class="fas fa-calendar-alt"></i> Today: {{ "now"|date('D, d M Y') }}</p>
+                        </div>
+                        <div class="weather-body">
+                            <div class="weather-main">
+                                <div class="weather-icon">
+                                    <img src="{{ weatherData.current.condition.icon }}" alt="{{ weatherData.current.condition.text }}">
+                                    <span class="condition">{{ weatherData.current.condition.text }}</span>
+                                </div>
+                                <div class="weather-temp">
+                                    <h2>{{ weatherData.current.temp_c }}°C</h2>
+                                </div>
+                            </div>
+                            <div class="weather-details">
+                                <p><i class="fas fa-wind"></i> <strong>Wind:</strong> {{ weatherData.current.wind_kph }} km/h, {{ weatherData.current.wind_dir }}</p>
+                                <p><i class="fas fa-cloud-rain"></i> <strong>Precipitation:</strong> {{ weatherData.current.precip_mm }} mm</p>
+                                <p><i class="fas fa-tachometer-alt"></i> <strong>Pressure:</strong> {{ weatherData.current.pressure_mb }} mb</p>
+                                <p><i class="fas fa-tint"></i> <strong>Humidity:</strong> {{ weatherData.current.humidity }}%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Forecast Weather -->
+                    {% if forecastData %}
+                        <div class="forecast-weather-container">
+                            <button class="scroll-btn scroll-left" onclick="scrollForecast('left')">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="forecast-weather-wrapper">
+                                <div class="forecast-weather">
+                                    {% for day in forecastData.forecast.forecastday|slice(0, 7) %}
+                                        <div class="forecast-day" onclick="showForecastDetails({{ loop.index0 }})" data-index="{{ loop.index0 }}">
+                                            <p class="day">{{ day.date ? day.date|date('D, d M') : 'N/A' }}</p>
+                                            <img src="{{ day.day.condition.icon }}" alt="{{ day.day.condition.text }}" class="forecast-icon">
+                                            <p class="temp">{{ day.day.maxtemp_c }}°C / {{ day.day.mintemp_c }}°C</p>
+                                            <p class="condition">{{ day.day.condition.text }}</p>
+                                            <!-- Hidden forecast details -->
+                                            <div class="forecast-details-hidden" id="forecast-details-{{ loop.index0 }}" style="display: none;">
+                                                <p><i class="fas fa-calendar-alt"></i> <strong>Date:</strong> {{ day.date ? day.date|date('Y-m-d') : 'N/A' }}</p>
+                                                <p><i class="fas fa-cloud"></i> <strong>Condition:</strong> {{ day.day.condition.text }}</p>
+                                                <p><i class="fas fa-temperature-high"></i> <strong>Max Temp:</strong> {{ day.day.maxtemp_c }}°C</p>
+                                                <p><i class="fas fa-temperature-low"></i> <strong>Min Temp:</strong> {{ day.day.mintemp_c }}°C</p>
+                                                <p><i class="fas fa-cloud-rain"></i> <strong>Precipitation:</strong> {{ day.day.totalprecip_mm }} mm</p>
+                                                <p><i class="fas fa-umbrella"></i> <strong>Chance of Rain:</strong> {{ day.day.daily_chance_of_rain|default('N/A') }}%</p>
+                                                <p><i class="fas fa-wind"></i> <strong>Wind:</strong> {{ day.day.maxwind_kph|default('N/A') }} km/h</p>
+                                                <p><i class="fas fa-tint"></i> <strong>Humidity:</strong> {{ day.day.avghumidity|default('N/A') }}%</p>
+                                                <p><i class="fas fa-sun"></i> <strong>UV Index:</strong> {{ day.day.uv|default('N/A') }}</p>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <button class="scroll-btn scroll-right" onclick="scrollForecast('right')">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <!-- Forecast Details Display -->
+                        <div class="forecast-details-display" id="forecast-details-display">
+                            <h4>Forecast Details</h4>
+                            <div id="forecast-details-content">
+                                <p>Click a day to see detailed forecast information.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="col-lg-12 text-center">
+                    <div class="alert alert-info">
+                        <i class="fa fa-info-circle fa-2x mb-3"></i>
+                        <p>Enter a city or use your current location to view the weather.</p>
+                    </div>
+                </div>
+            {% endif %}
+      </div>
+    </section>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap">
+    <style>
+        :root {
+            --primary: #ff6f00;
+            --primary-dark: #e55f00;
+            --secondary: #1a1a1a;
+            --text: #2d2d2d;
+            --text-light: #6b7280;
+            --background: #f9fafb;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Breadcrumb Section */
+        .breadcrumb-section {
+            background: linear-gradient(135deg, var(--secondary), #333);
+            padding: 100px 0;
+            color: #fff;
+        }
+        .breadcrumb-text h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 40px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .bt-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+        .bt-option a, .bt-option span {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .bt-option a:hover {
+            color: var(--primary-dark);
+        }
+
+        /* Gym Details Section */
+        .gym-details-section {
+            padding: 80px 0;
+            background: var(--background);
+        }
+        .gym-image {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.4s ease;
+        }
+        .gym-image:hover {
+            transform: scale(1.02);
+        }
+        .gym-image img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        .gym-content h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 16px;
+        }
+        .gym-content p {
+            font-size: 16px;
+            color: var(--text-light);
+            line-height: 1.8;
+            margin-bottom: 24px;
+        }
+        .gym-meta {
+            list-style: none;
+            margin-bottom: 32px;
+        }
+        .gym-meta li {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        .gym-meta li i {
+            color: var(--primary);
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        .gym-actions {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .primary-btn {
+            background: var(--primary);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+        .primary-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        .primary-btn.secondary {
+            background: var(--text-light);
+        }
+        .primary-btn.secondary:hover {
+            background: var(--text);
+        }
+        .primary-btn[data-tooltip]:after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+        }
+        .primary-btn[data-tooltip]:hover:after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Subscriptions Section */
+        .subscriptions-section, .events-section {
+            padding: 80px 0;
+            background: var(--background);
+        }
+        .section-title {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        .section-title span {
+            font-size: 16px;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .section-title h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .activity-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+        }
+        .activity-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+        .activity-name {
+            background: linear-gradient(90deg, #333, #444);
+            color: #fff;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px 12px 0 0;
+        }
+        .activity-name i {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+        .activity-name h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .subscriptions-container {
+            padding: 20px;
+            display: grid;
+            gap: 16px;
+        }
+        .subscription-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        .subscription-card:hover {
+            transform: scale(1.02);
+        }
+        .subscription-header {
+            padding: 16px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .subscription-header h4 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .subscription-header .price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 8px;
+        }
+        .subscription-body {
+            padding: 16px;
+        }
+        .subscription-features {
+            list-style: none;
+            margin-bottom: 16px;
+        }
+        .subscription-features li {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .subscription-features li i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+        .subscription-btn {
+            width: 100%;
+            background: var(--primary);
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .subscription-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        .subscription-btn[data-tooltip]:after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+        }
+        .subscription-btn[data-tooltip]:hover:after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Payment Modal */
+        .payment-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .payment-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .payment-content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: var(--shadow);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .payment-modal.active .payment-content {
+            transform: translateY(0);
+        }
+        .close-modal {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 20px;
+            color: var(--text);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .close-modal:hover {
+            color: var(--primary);
+        }
+        .payment-header {
+            background: var(--primary);
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px 12px 0 0;
+        }
+        .payment-header h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .payment-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .payment-body {
+            padding: 20px;
+        }
+        #card-element {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        #submit {
+            width: 100%;
+            background: var(--primary);
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        #submit:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        #submit .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        #submit.processing .spinner {
+            display: block;
+        }
+        #error-message {
+            color: #dc2626;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        /* Confirmation Modal */
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .confirmation-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .confirmation-content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            max-width: 420px;
+            width: 90%;
+            padding: 24px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .confirmation-modal.active .confirmation-content {
+            transform: translateY(0);
+        }
+        .close-confirmation {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 20px;
+            color: var(--text);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .close-confirmation:hover {
+            color: var(--primary);
+        }
+        .confirmation-icon {
+            width: 64px;
+            height: 64px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+        .confirmation-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: #fff;
+        }
+        .confirmation-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .confirmation-qr p {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+        .confirmation-qr canvas {
+            display: block;
+            margin: 0 auto;
+        }
+        .qr-error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+        .retry-btn {
+            background: var(--primary);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            margin: 8px 4px;
+        }
+        .pdf-link {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+        .confirmation-details {
+            background: #f3f4f6;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        .confirmation-detail {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .confirmation-detail-label {
+            font-weight: 500;
+            color: var(--text);
+            width: 100px;
+        }
+        .confirmation-detail-value {
+            color: var(--text-light);
+        }
+        .confirmation-button {
+            background: var(--primary);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .confirmation-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Events Section */
+        .event-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+        }
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+        .event-pic {
+            overflow: hidden;
+            border-radius: 12px 12px 0 0;
+        }
+        .event-pic img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .event-card:hover .event-pic img {
+            transform: scale(1.05);
+        }
+        .event-text {
+            padding: 20px;
+            text-align: center;
+        }
+        .event-text span {
+            font-size: 14px;
+            color: var(--primary);
+            text-transform: uppercase;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .event-text h5 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        .event-text p {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .event-details {
+            list-style: none;
+            margin-bottom: 16px;
+        }
+        .event-details li {
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .event-details li i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+        .event-btn {
+            background: var(--primary);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .event-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        .event-btn[data-tooltip]:after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+        }
+        .event-btn[data-tooltip]:hover:after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Notification Modal */
+        .notification-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .notification-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .notification-content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            max-width: 420px;
+            width: 90%;
+            padding: 24px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .notification-modal.active .notification-content {
+            transform: translateY(0);
+        }
+        .notification-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+        .notification-icon i {
+            color: #fff;
+            font-size: 24px;
+        }
+        .notification-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        .notification-message {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .notification-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+        .notification-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        .notification-btn.remind-later {
+            background: var(--text-light);
+            color: #fff;
+        }
+        .notification-btn.remind-later:hover {
+            background: var(--text);
+        }
+        .notification-btn.cancel {
+            background: var(--primary);
+            color: #fff;
+        }
+        .notification-btn.cancel:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .gym-content h2, .section-title h2 {
+                font-size: 32px;
+            }
+            .event-pic img {
+                height: 180px;
+            }
+        }
+        @media (max-width: 768px) {
+            .gym-details-section, .subscriptions-section, .events-section {
+                padding: 60px 0;
+            }
+            .gym-image {
+                margin-bottom: 32px;
+            }
+            .gym-content h2, .section-title h2 {
+                font-size: 28px;
+            }
+            .gym-actions {
+                flex-direction: column;
+            }
+            .subscriptions-container {
+                grid-template-columns: 1fr;
+            }
+            .event-pic img {
+                height: 160px;
+            }
+        }
+        @media (max-width: 576px) {
+            .breadcrumb-text h2 {
+                font-size: 32px;
+            }
+            .gym-content h2, .section-title h2 {
+                font-size: 24px;
+            }
+            .primary-btn, .subscription-btn, .event-btn {
+                width: 100%;
+                padding: 10px;
+            }
+            .activity-name h3, .subscription-header h4, .event-text h5 {
+                font-size: 18px;
+            }
+            .notification-title {
+                font-size: 18px;
+            }
+        }
+          /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Breadcrumb Section Styling */
+        .breadcrumb-section {
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            padding: 120px 0;
+            position: relative;
+            overflow: hidden;
+            transform: skewY(-2deg);
+        }
+        .breadcrumb-section > .container {
+            transform: skewY(2deg);
+        }
+        .breadcrumb-text h2 {
+            color: #ffffff;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .bt-option a {
+            color: #f36100;
+            font-size: 16px;
+            text-decoration: none;
+            font-family: 'Muli', sans-serif;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .bt-option a:hover {
+            color: #ff8c00;
+        }
+        .bt-option a::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #ff8c00;
+            transition: width 0.3s ease;
+        }
+        .bt-option a:hover::after {
+            width: 100%;
+        }
+        .bt-option span {
+            color: #f36100;
+            font-size: 16px;
+            font-family: 'Muli', sans-serif;
+        }
+
+        /* Gym Details Section */
+        .gym-details-section {
+            padding: 100px 0;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+        }
+        .gym-details-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/subtle-white-feathers.png');
+            opacity: 0.05;
+            z-index: 0;
+        }
+        .gym-image {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transition: transform 0.5s ease;
+            z-index: 1;
+            position: relative;
+        }
+        .gym-image:hover {
+            transform: scale(1.03);
+        }
+        .gym-image img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5));
+            z-index: 1;
+        }
+        .gym-content {
+            z-index: 1;
+            position: relative;
+        }
+        .gym-content h2 {
+            font-size: 48px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 25px;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .gym-content h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100px;
+            height: 5px;
+            background: linear-gradient(90deg, #f36100, #ff8c00);
+            border-radius: 3px;
+        }
+        .gym-content p {
+            font-size: 15px;
+            color: #333333;
+            line-height: 1.9;
+            margin-bottom: 25px;
+            font-family: 'Muli', sans-serif;
+        }
+        .gym-meta {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+        .gym-meta li {
+            font-size: 15px;
+            color: #333333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            font-family: 'Muli', sans-serif;
+        }
+        .gym-meta li i {
+            color: #f36100;
+            margin-right: 15px;
+            font-size: 20px;
+            transition: color 0.3s ease;
+        }
+        .gym-meta li:hover i {
+            color: #ff8c00;
+        }
+        .gym-actions {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .primary-btn {
+            background: linear-gradient(90deg, #f36100, #ff8c00);
+            color: #ffffff;
+            padding: 14px 28px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            font-size: 15px;
+            font-weight: 700;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            font-family: 'Oswald', sans-serif;
+            box-shadow: 0 6px 20px rgba(243, 97, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        .primary-btn:hover {
+            background: linear-gradient(90deg, #ff8c00, #f36100);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(243, 97, 0, 0.5);
+        }
+        .primary-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        .primary-btn:hover::before {
+            left: 100%;
+        }
+        .primary-btn[data-tooltip] {
+            position: relative;
+        }
+        .primary-btn[data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Muli', sans-serif;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+        .primary-btn[data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Subscriptions and Events Sections */
+        .subscriptions-section, .events-section, .weather-section {
+            padding: 100px 0;
+            background: #fafafa;
+            position: relative;
+        }
+        .subscriptions-section::before, .events-section::before, .weather-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/subtle-white-feathers.png');
+            opacity: 0.05;
+            z-index: 0;
+        }
+        .section-title {
+            text-align: center;
+            margin-bottom: 70px;
+            position: relative;
+            z-index: 1;
+        }
+        .section-title span {
+            font-family: 'Oswald', sans-serif;
+            font-size: 20px;
+            font-weight: 500;
+            color: #f36100;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            display: block;
+            margin-bottom: 15px;
+        }
+        .section-title h2 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 5px;
+            background: linear-gradient(90deg, #f36100, #ff8c00);
+            border-radius: 3px;
+        }
+
+        /* Activity Grid */
+        .activity-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            transition: all 0.4s ease;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-in-out;
+            position: relative;
+            z-index: 1;
+        }
+        .activity-card:hover {
+            transform: translateY(-5px) rotate(0.5deg);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .activity-name {
+            padding: 20px;
+            background: linear-gradient(90deg, rgb(96, 94, 94), rgb(133, 130, 130));
+            color: #e0e0e0;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .activity-name i {
+            font-size: 20px;
+            color: #e0e0e0;
+            margin-right: 10px;
+            transition: color 0.3s ease;
+        }
+        .activity-name:hover i {
+            color: #ff8c00;
+        }
+        .activity-name h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        .subscriptions-container {
+            padding: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+        .subscription-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            background: #f8f9fa;
+            backdrop-filter: blur(5px);
+            position: relative;
+            z-index: 1;
+        }
+        .subscription-card:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        .subscription-header {
+            padding: 15px;
+            background: #ffffff;
+            border-bottom: 2px solid #e0e0e0;
+            text-align: center;
+        }
+        .subscription-header h4 {
+            font-size: 20px;
+            margin: 0;
+            color: #1a1a1a;
+            font-weight: 700;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+        .subscription-header .price {
+            font-size: 22px;
+            font-weight: 700;
+            color: #f36100;
+            margin-top: 10px;
+            font-family: 'Oswald', sans-serif;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .subscription-body {
+            padding: 15px;
+        }
+        .subscription-features {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .subscription-features li {
+            font-size: 15px;
+            color: #333333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            font-family: 'Muli', sans-serif;
+        }
+        .subscription-features li i {
+            color: #f36100;
+            margin-right: 12px;
+            font-size: 18px;
+            transition: color 0.3s ease;
+        }
+        .subscription-features li:hover i {
+            color: #ff8c00;
+        }
+        .subscription-btn {
+            display: block;
+            background: linear-gradient(90deg, #f36100, #ff8c00);
+            color: #ffffff;
+            padding: 12px 18px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            font-size: 15px;
+            font-weight: 700;
+            text-align: center;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            font-family: 'Oswald', sans-serif;
+            box-shadow: 0 6px 15px rgba(243, 97, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .subscription-btn:hover {
+            background: linear-gradient(90deg, #ff8c00, #f36100);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(243, 97, 0, 0.4);
+        }
+        .subscription-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        .subscription-btn:hover::before {
+            left: 100%;
+        }
+        .subscription-btn[data-tooltip] {
+            position: relative;
+        }
+        .subscription-btn[data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Muli', sans-serif;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+        .subscription-btn[data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Events */
+        .event-card {
+            background: #ffffff;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.4s ease;
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 0.6s ease-in-out;
+            position: relative;
+            z-index: 1;
+        }
+        .event-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+        .event-image-wrapper {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+        .event-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .event-card:hover .event-image-wrapper img {
+            transform: scale(1.08);
+        }
+        .event-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5));
+        }
+        .event-type-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: linear-gradient(90deg, #f36100, #ff8c00);
+            color: #ffffff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-family: 'Oswald', sans-serif;
+        }
+        .event-date {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(90deg, #ff6200, #ff8c00);
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            width: 60px;
+        }
+        .event-date span {
+            font-size: 24px;
+            font-weight: 700;
+            display: block;
+            font-family: 'Oswald', sans-serif;
+        }
+        .event-date p {
+            font-size: 12px;
+            margin: 0;
+            text-transform: uppercase;
+            font-family: 'Muli', sans-serif;
+        }
+        .event-content {
+            padding: 25px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .event-content h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f36100;
+            padding-bottom: 10px;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+        .details-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex: 1;
+        }
+        .details-list li {
+            font-size: 14px;
+            color: #333333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            line-height: 1.5;
+            transition: color 0.3s ease;
+            font-family: 'Muli', sans-serif;
+        }
+        .details-list li:hover {
+            color: #1a1a1a;
+        }
+        .details-list li strong {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+        .details-list .icon {
+            color: #f36100;
+            font-size: 16px;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        .details-list .reward-icon {
+            color: #FFD700; /* Gold for reward */
+            font-size: 16px;
+        }
+        .details-list li:hover .icon {
+            transform: scale(1.2);
+            color: #ff8c00;
+        }
+        .details-list li:hover .reward-icon {
+            transform: scale(1.2);
+            color: #FFC107; /* Brighter gold on hover */
+            animation: pulse 0.5s ease-in-out;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1.2); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1.2); }
+        }
+        .location-item {
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .location-item .icon {
+            font-size: 18px;
+        }
+        .location-item:hover .icon {
+            color: #ff6200;
+        }
+        .location-text {
+            color: #333333;
+            background: rgba(243, 97, 0, 0.05);
+            padding: 5px 8px;
+            border-radius: 5px;
+            max-width: 80%;
+            display: inline-block;
+        }
+        .location-text:empty:before, .location-text:contains('Not specified') {
+            content: 'Not specified';
+            font-style: italic;
+            color: #888888;
+        }
+        .event-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .event-btn, .join-btn {
+            flex: 1;
+            text-align: center;
+            padding: 12px 18px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            text-decoration: none;
+            font-family: 'Oswald', sans-serif;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .event-btn {
+            background: linear-gradient(90deg, #6c757d, #adb5bd);
+            color: #ffffff;
+            box-shadow: 0 6px 15px rgba(108, 117, 125, 0.3);
+            border: 2px solid #6c757d;
+        }
+        .event-btn:hover {
+            background: linear-gradient(90deg, #adb5bd, #6c757d);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(108, 117, 125, 0.4);
+            border-color: #adb5bd;
+        }
+        .event-btn i {
+            transition: transform 0.3s ease;
+        }
+        .event-btn:hover i {
+            transform: scale(1.2);
+        }
+        .event-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        .event-btn:hover::before {
+            left: 100%;
+        }
+        .join-btn {
+            background: linear-gradient(90deg, #ff6200, #ff8c00);
+            color: #ffffff;
+            box-shadow: 0 6px 15px rgba(255, 98, 0, 0.3);
+            border: 2px solid #ff6200;
+        }
+        .join-btn:hover {
+            background: linear-gradient(90deg, #ff8c00, #ff6200);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(255, 98, 0, 0.4);
+            border-color: #ff8c00;
+        }
+        .join-btn i {
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        .join-btn:hover i {
+            transform: scale(1.2);
+            color: #ff8c00;
+        }
+        .join-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        .join-btn:hover::before {
+            left: 100%;
+        }
+        .event-btn[data-tooltip], .join-btn[data-tooltip] {
+            position: relative;
+        }
+        .event-btn[data-tooltip]::after, .join-btn[data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Muli', sans-serif;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+        .event-btn[data-tooltip]:hover::after, .join-btn[data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+        .dropdown-toggle::after {
+            margin-left: 5px;
+        }
+        .dropdown-menu {
+            min-width: 150px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .dropdown-item {
+            padding: 8px 15px;
+            color: #333;
+        }
+        .dropdown-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Teams List Styling */
+        .team-list {
+            margin-top: 5px;
+            padding: 5px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .team-item {
+            padding: 5px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        /* Weather Section Styling */
+        .weather-search-form {
+            margin-bottom: 40px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .weather-search-container {
+            display: inline-flex;
+            align-items: center;
+            background: #ffffff;
+            border-radius: 50px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 500px;
+            width: 100%;
+        }
+        .weather-search-input {
+            border: none;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-family: 'Muli', sans-serif;
+            flex: 1;
+            outline: none;
+            border-radius: 50px 0 0 50px;
+            transition: all 0.3s ease;
+        }
+        .weather-search-input:focus {
+            box-shadow: inset 0 0 5px rgba(243, 97, 0, 0.3);
+        }
+        .weather-search-btn, .weather-geo-btn {
+            background: linear-gradient(90deg, #f36100, #ff8c00);
+            color: #ffffff;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .weather-search-btn {
+            border-radius: 0 50px 50px 0;
+        }
+        .weather-geo-btn {
+            border-radius: 50px;
+            margin-left: 5px;
+        }
+        .weather-search-btn:hover, .weather-geo-btn:hover {
+            background: linear-gradient(90deg, #ff8c00, #f36100);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(243, 97, 0, 0.4);
+        }
+        .weather-search-btn::before, .weather-geo-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        .weather-search-btn:hover::before, .weather-geo-btn:hover::before {
+            left: 100%;
+        }
+        .weather-search-btn[data-tooltip]::after, .weather-geo-btn[data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Muli', sans-serif;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+        .weather-search-btn[data-tooltip]:hover::after, .weather-geo-btn[data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Weather Widget Styling */
+        .weather-widget {
+            background: linear-gradient(135deg, #d3d3d3, #87CEEB); /* Light gray to light blue */
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .weatherDRAM-widget::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/light-gray-tiles.png');
+            opacity: 0.1;
+            z-index: -1;
+        }
+        .current-weather {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .weather-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .weather-header h3 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2F4F4F; /* Dark slate gray for text */
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .current-date {
+            font-size: 16px;
+            font-weight: 500;
+            color: #2F4F4F;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .current-date i {
+            margin-right: 8px;
+            font-size: 16px;
+            color: #4682B4; /* Steel blue for icons */
+        }
+        .weather-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .weather-main {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .weather-icon {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+        .weather-icon img {
+            width: 60px;
+            height: 60px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+        .weather-icon .condition {
+            font-size: 18px;
+            font-weight: 500;
+            color: #2F4F4F; /* Dark slate gray for text */
+            margin-left: 10px;
+            text-transform: capitalize;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .weather-temp h2 {
+            font-size: 48px;
+            font-weight: 700;
+            color: #2F4F4F; /* Dark slate gray for text */
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .weather-details {
+            text-align: center;
+            color: #2F4F4F; /* Dark slate gray for text */
+        }
+        .weather-details p {
+            font-size: 14px;
+            margin: 5px 0;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .weather-details p i {
+            margin-right: 8px;
+            font-size: 16px;
+            color: #4682B4; /* Steel blue for icons */
+        }
+        .weather-details strong {
+            font-weight: 600;
+            color: #2F4F4F; /* Dark slate gray for text */
+        }
+
+        /* Forecast Weather with Arrows */
+        .forecast-weather-container {
+            position: relative;
+            width: 100%;
+            border-top: 1px solid rgba(0, 0, 0, 0.2);
+        }
+        .forecast-weather-wrapper {
+            width: 100%;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        .forecast-weather {
+            display: flex;
+            padding: 15px 0;
+            width: max-content;
+        }
+        .forecast-day {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #2F4F4F; /* Dark slate gray for text */
+            padding: 10px;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            min-width: 150px;
+        }
+        .forecast-day:hover {
+            transform: scale(1.05);
+        }
+        .forecast-day.active {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .forecast-day .day {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .forecast-icon {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+        .forecast-day .temp {
+            font-size: 16px;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .forecast-day .condition {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: capitalize;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .scroll-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(90deg, #f36100, #ff8c00);
+            color: #ffffff;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+        .scroll-btn:hover {
+            background: linear-gradient(90deg, #ff8c00, #f36100);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        .scroll-left {
+            left: -20px;
+        }
+        .scroll-right {
+            right: -20px;
+        }
+        .scroll-btn i {
+            font-size: 18px;
+        }
+        .forecast-details-display {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            color: #2F4F4F; /* Dark slate gray for text */
+            text-align: center;
+        }
+        .forecast-details-display h4 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .forecast-details-display p {
+            font-size: 14px;
+            margin: 5px 0;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .forecast-details-display p i {
+            margin-right: 8px;
+            font-size: 16px;
+            color: #4682B4; /* Steel blue for icons */
+        }
+        .forecast-details-display strong {
+            font-weight: 600;
+            color: #2F4F4F; /* Dark slate gray for text */
+        }
+
+        /* Flash Message Styles */
+        .alert {
+            margin-bottom: 20px;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            font-family: 'Muli', sans-serif;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .gym-content h2 {
+                font-size: 40px;
+            }
+            .section-title h2 {
+                font-size: 40px;
+            }
+            .event-image-wrapper {
+                height: 180px;
+            }
+            .subscriptions-container {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            }
+            .activity-card, .event-card {
+                animation: none;
+            }
+            .weather-main {
+                flex-direction: column;
+                text-align: center;
+            }
+            .weather-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            .forecast-day {
+                min-width: 140px;
+            }
+            .scroll-btn {
+                width: 35px;
+                height: 35px;
+            }
+            .scroll-left {
+                left: -15px;
+            }
+            .scroll-right {
+                right: -15px;
+            }
+        }
+        @media (max-width: 768px) {
+            .gym-details-section, .subscriptions-section, .events-section, .weather-section {
+                padding: 80px 0;
+            }
+            .gym-image {
+                margin-bottom: 40px;
+            }
+            .gym-content h2 {
+                font-size: 36px;
+            }
+            .section-title h2 {
+                font-size: 36px;
+            }
+            .event-image-wrapper {
+                height: 160px;
+            }
+            .subscriptions-container {
+                grid-template-columns: 1fr;
+            }
+            .gym-actions {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .primary-btn, .event-btn, .join-btn, .weather-search-btn, .weather-geo-btn {
+                padding: 12px 20px;
+            }
+            .event-actions {
+                flex-direction: column;
+            }
+            .weather-search-container {
+                flex-direction: column;
+                max-width: 100%;
+            }
+            .weather-search-input {
+                border-radius: 50px;
+                margin-bottom: 10px;
+            }
+            .weather-search-btn, .weather-geo-btn {
+                width: 100%;
+                border-radius: 50px;
+            }
+            .weather-geo-btn {
+                margin-left: 0;
+            }
+            .weather-temp h2 {
+                font-size: 36px;
+            }
+            .weather-icon img {
+                width: 50px;
+                height: 50px;
+            }
+            .weather-icon .condition {
+                font-size: 16px;
+            }
+            .forecast-day {
+                min-width: 130px;
+            }
+            .scroll-btn {
+                width: 30px;
+                height: 30px;
+            }
+            .scroll-left {
+                left: -10px;
+            }
+            .scroll-right {
+                right: -10px;
+            }
+        }
+        @media (max-width: 576px) {
+            .gym-content h2 {
+                font-size: 32px;
+            }
+            .section-title h2 {
+                font-size: 32px;
+            }
+            .event-image-wrapper {
+                height: 140px;
+            }
+            .event-content {
+                padding: 20px;
+            }
+            .event-content h3 {
+                font-size: 20px;
+            }
+            .details-list li {
+                font-size: 13px;
+            }
+            .weather-temp h2 {
+                font-size: 32px;
+            }
+            .weather-icon img {
+                width: 40px;
+                height: 40px;
+            }
+            .weather-icon .condition {
+                font-size: 14px;
+            }
+            .forecast-day {
+                min-width: 120px;
+            }
+            .forecast-day .day {
+                font-size: 12px;
+            }
+            .forecast-day .temp {
+                font-size: 14px;
+            }
+            .forecast-day .condition {
+                font-size: 12px;
+            }
+            .scroll-btn {
+                width: 25px;
+                height: 25px;
+            }
+            .scroll-btn i {
+                font-size: 14px;
+            }
+        }
+    
+    </style>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": true,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+
+        // Define asset paths for JavaScript usage
+        const assetBaseUrl = "{{ asset('') }}";
+        const eventImageBasePath = assetBaseUrl + 'Uploads/events/';
+        const defaultEventImage = assetBaseUrl + 'img/event-default.jpg';
+
+        // Geolocation for weather
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        const locationInput = document.getElementById('location');
+                        locationInput.value = `${lat},${lon}`;
+                        locationInput.form.submit();
+                    },
+                    error => {
+                        console.error("Error getting location:", error);
+                        toastr.error("Unable to retrieve your location. Please enter a city manually.");
+                    }
+                );
+            } else {
+                toastr.error("Geolocation is not supported by your browser. Please enter a city manually.");
+            }
+        }
+
+        // Scroll forecast weather
+        function scrollForecast(direction) {
+            const wrapper = document.querySelector('.forecast-weather-wrapper');
+            const scrollAmount = 200;
+            if (direction === 'left') {
+                wrapper.scrollLeft -= scrollAmount;
+            } else {
+                wrapper.scrollLeft += scrollAmount;
+            }
+        }
+
+        // Show forecast details
+        function showForecastDetails(index) {
+            const detailsHidden = document.getElementById(`forecast-details-${index}`);
+            const detailsContent = document.getElementById('forecast-details-content');
+            const allForecastDays = document.querySelectorAll('.forecast-day');
+
+            // Remove active class from all days
+            allForecastDays.forEach(day => day.classList.remove('active'));
+
+            // Add active class to the clicked day
+            const clickedDay = document.querySelector(`.forecast-day[data-index="${index}"]`);
+            clickedDay.classList.add('active');
+
+            // Display the details
+            detailsContent.innerHTML = detailsHidden.innerHTML;
+        }
+
+        // Refresh events every 30 seconds
+        let lastNotifications = [];
+        function refreshEvents() {
+            fetch("{{ path('sportif_salle_events', {'id': salle.id}) }}")
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('events-container');
+                    container.innerHTML = '';
+
+                    // Handle notifications
+                    if (data.notifications && Array.isArray(data.notifications)) {
+                        data.notifications.forEach(notification => {
+                            if (!lastNotifications.includes(notification.id)) {
+                                if (notification.type === 'added') {
+                                    toastr.success(`New event team added: ${notification.message}`, 'Event Added');
+                                } else if (notification.type === 'deleted') {
+                                    toastr.warning(`Event team deleted: ${notification.message}`, 'Event Deleted');
+                                }
+                                lastNotifications.push(notification.id);
+                                // Keep only the last 50 notifications to prevent memory issues
+                                if (lastNotifications.length > 50) {
+                                    lastNotifications.shift();
+                                }
+                            }
+                        });
+                    }
+
+                    if (!data.grouped_equipe_events || data.grouped_equipe_events.length === 0) {
+                        container.innerHTML = `
+                            <div class="col-lg-12 text-center">
+                                <div class="alert alert-info">
+                                    <i class="fa fa-info-circle fa-2x mb-3"></i>
+                                    <p>No team events scheduled for this gym currently.</p>
+                                </div>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    data.grouped_equipe_events.forEach((group, index) => {
+                        const event = group.event;
+                        const equipeEvents = group.equipeEvents;
+                        const imageUrl = event.imageUrl ? `${eventImageBasePath}${event.imageUrl.split('/').pop()}` : defaultEventImage;
+
+                        let eventActions = '';
+                        if (equipeEvents.length === 1) {
+                            eventActions = `
+                                <a href="${equipeEvents[0].detailsUrl}" class="event-btn" data-tooltip="View event details" aria-label="View details for ${event.nom}">
+                                    <i class="fa fa-info-circle me-2"></i>Details
+                                </a>
+                                <a href="${equipeEvents[0].joinUrl}" class="join-btn" data-tooltip="Join this event" aria-label="Join ${event.nom}">
+                                    <i class="fas fa-user-plus me-2"></i>Join
+                                </a>
+                            `;
+                        } else {
+                            eventActions = `
+                                <div class="dropdown">
+                                    <button class="event-btn dropdown-toggle" type="button" id="detailsDropdown-${event.id}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa fa-info-circle me-2"></i>Details
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="detailsDropdown-${event.id}">
+                                        ${equipeEvents.map(ee => `
+                                            <li>
+                                                <a class="dropdown-item" href="${ee.detailsUrl}">
+                                                    ${ee.equipeNom}
+                                                </a>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="join-btn dropdown-toggle" type="button" id="joinDropdown-${event.id}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-user-plus me-2"></i>Join
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="joinDropdown-${event.id}">
+                                        ${equipeEvents.map(ee => `
+                                            <li>
+                                                <a class="dropdown-item" href="${ee.joinUrl}">
+                                                    ${ee.equipeNom}
+                                                </a>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            `;
+                        }
+
+                        const card = `
+                            <div class="col-lg-4 col-md-6">
+                                <div class="event-card" style="animation-delay: ${index * 0.1}s;">
+                                    <div class="event-image-wrapper">
+                                        <img src="${imageUrl}" alt="${event.nom}" onerror="this.src='${defaultEventImage}'">
+                                        <div class="event-overlay">
+                                            <div class="event-type-badge">${event.type ? event.type.charAt(0).toUpperCase() + event.type.slice(1) : 'Not defined'}</div>
+                                        </div>
+                                        <div class="event-date">
+                                            <span>${ event.date}</span>
+                                            <p>${ event.date}</p>
+                                        </div>
+
+
+                                        </div>
+                                    </div>
+                                    <div class="event-content">
+                                        <h3>${event.nom}</h3>
+                                        <ul class="details-list">
+                                            <li>
+                                                <i class="fa fa-users icon"></i>
+                                                <strong>Teams:</strong>
+                                                <div class="team-list">
+                                                    ${equipeEvents.length > 0 ? equipeEvents.map(ee => `<div class="team-item">- ${ee.equipeNom}</div>`).join('') : '<div class="team-item text-muted">No teams associated.</div>'}
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <i class="fa fa-info-circle icon"></i>
+                                                <strong>Description:</strong> ${event.description ? event.description.substring(0, 60) + '...' : 'No description'}
+                                            </li>
+                                            <li>
+                                                <i class="fa fa-clock-o icon"></i>
+                                                <strong>Time:</strong> ${event.heureDebut || 'N/A'} - ${event.heureFin || 'N/A'}
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-trophy icon reward-icon"></i>
+                                                <strong>Reward:</strong> ${event.reward ? event.reward.charAt(0).toUpperCase() + event.reward.slice(1) : 'None'}
+                                            </li>
+                                            <li class="location-item">
+                                                <i class="fa fa-map-marker icon"></i>
+                                                <strong>Location:</strong> <span class="location-text">${event.lieu || 'Not specified'}</span>
+                                            </li>
+                                        </ul>
+                                        <div class="event-actions">
+                                            ${eventActions}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        container.innerHTML += card;
+
+                        // Reinitialize Bootstrap dropdowns after adding new content
+                        const dropdownElementList = container.querySelectorAll('.dropdown-toggle');
+                        dropdownElementList.forEach(dropdown => {
+                            new bootstrap.Dropdown(dropdown);
+                        });
+                    });
+
+                    // Ensure consistent card heights
+                    const eventCards = document.querySelectorAll('.event-card');
+                    let maxHeight = 0;
+                    eventCards.forEach(card => {
+                        const height = card.offsetHeight;
+                        if (height > maxHeight) {
+                            maxHeight = height;
+                        }
+                    });
+                    eventCards.forEach(card => {
+                        card.style.height = `${maxHeight}px`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error refreshing events:', error);
+                    const container = document.getElementById('events-container');
+                    container.innerHTML = `
+                        <div class="col-lg-12 text-center">
+                            <div class="alert alert-danger">
+                                <i class="fa fa-exclamation-circle fa-2x mb-3"></i>
+                                <p>Failed to load events. Please try again later.</p>
+                            </div>
+                        </div>
+                    `;
+                    toastr.error('Failed to load events. Please try again later.', 'Error');
+                });
+        }
+
+        // Initial call and set interval for refreshing events
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshEvents();
+            setInterval(refreshEvents, 30000);
+
+            // Initialize Bootstrap dropdowns for initial content
+            const dropdownElementList = document.querySelectorAll('.dropdown-toggle');
+            dropdownElementList.forEach(dropdown => {
+                new bootstrap.Dropdown(dropdown);
+            });
+
+            // Ensure consistent card heights
+            const cards = document.querySelectorAll('.activity-card, .event-card, .subscription-card');
+            cards.forEach(card => {
+                card.style.minHeight = 'auto';
+                card.style.height = '100%';
+            });
+
+            const eventCards = document.querySelectorAll('.event-card');
+            let maxHeight = 0;
+            eventCards.forEach(card => {
+                const height = card.offsetHeight;
+                if (height > maxHeight) {
+                    maxHeight = height;
+                }
+            });
+            eventCards.forEach(card => {
+                card.style.height = `${maxHeight}px`;
+            });
+        });
+    </script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Initializing payment system');
+
+            // Initialize Stripe
+            const stripe = Stripe('{{ stripe_public_key|escape('js') }}');
+            const elements = stripe.elements();
+            const card = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#1F2937',
+                        '::placeholder': { color: '#9CA3AF' },
+                    },
+                }
+            });
+
+            // DOM Elements
+            const paymentModal = document.getElementById('payment-modal');
+            const closeModal = document.querySelector('.close-modal');
+            const paymentForm = document.getElementById('payment-form');
+            const submitButton = document.getElementById('submit');
+            const errorMessage = document.getElementById('error-message');
+            const confirmationModal = document.getElementById('confirmation-modal');
+            const closeConfirmation = document.querySelector('.close-confirmation');
+            const confirmationButton = document.getElementById('confirmation-button');
+            const paymentAmount = document.getElementById('payment-amount');
+            const confirmationQrContainer = document.querySelector('.confirmation-qr');
+            const confirmationType = document.getElementById('confirmation-type');
+            const confirmationActivity = document.getElementById('confirmation-activity');
+            const confirmationStart = document.getElementById('confirmation-start');
+            const confirmationEnd = document.getElementById('confirmation-end');
+            const subscriptionButtons = document.querySelectorAll('.subscription-btn');
+
+            // State variables
+            let currentAbonnementId = null;
+            let currentAmount = null;
+            let currentType = null;
+            let currentActivity = null;
+            let paymentIntentId = null;
+
+            // Helper function to format dates
+            function formatDate(date) {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                return date.toLocaleDateString('fr-FR', options);
+            }
+
+            // Show payment modal
+            function showPaymentModal(errorMsg = '') {
+                console.log('Showing payment modal for abonnement:', currentAbonnementId);
+                if (!card._complete) {
+                    card.mount('#card-element');
+                }
+                paymentModal.classList.add('active');
+                errorMessage.textContent = errorMsg;
+            }
+
+            // Close payment modal
+            function closePaymentModal() {
+                paymentModal.classList.remove('active');
+                if (card._complete) {
+                    card.unmount();
+                }
+                paymentForm.reset();
+                errorMessage.textContent = '';
+            }
+
+            function showQrCode() {
+                console.log('Generating QR code for abonnement:', currentAbonnementId);
+                
+                // Clear previous QR code
+                confirmationQrContainer.innerHTML = '';
+                
+                if (!currentAbonnementId) {
+                    showQrError('ID d\'abonnement manquant');
+                    return;
+                }
+
+                // Utilisez une URL absolue pour le QR code
+const pdfUrl = 'http://192.168.1.10:8000{{ path('abonnement_confirmation_pdf', {'id': 'ABON_ID'}) }}'
+    .replace('ABON_ID', currentAbonnementId);
+
+                try {
+                    // Create QR code
+                    const qrCode = new QRCode(confirmationQrContainer, {
+                        text: pdfUrl,
+                        width: 150,
+                        height: 150,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+
+                    // Ajoutez un message explicatif
+                    const info = document.createElement('p');
+                    info.textContent = 'Scannez ce QR code pour télécharger votre confirmation';
+                    info.style.marginTop = '10px';
+                    info.style.fontFamily = 'Inter, sans-serif';
+                    info.style.textAlign = 'center';
+                    confirmationQrContainer.appendChild(info);
+
+                } catch (error) {
+                    console.error('QR code generation error:', error);
+                    showQrError('Erreur de génération du QR code');
+                }
+            }
+
+            // Show error message
+            function showQrError(message) {
+                confirmationQrContainer.innerHTML = `
+                    <div class="qr-error">
+                        <p>${message}</p>
+                        <button class="retry-btn">Réessayer</button>
+                        <a href="responsable/abonnement/abonnement/${currentAbonnementId}/confirmation/pdf" class="pdf-link">
+                            Télécharger le PDF
+                        </a>
+                    </div>
+                `;
+
+                // Add retry button handler
+                confirmationQrContainer.querySelector('.retry-btn').addEventListener('click', showQrCode);
+            }
+
+            // Handle subscription button clicks
+            subscriptionButtons.forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    
+                    if (button.disabled) return;
+                    button.disabled = true;
+                    button.textContent = 'Traitement...';
+
+                    // Store subscription data
+                    currentAbonnementId = button.dataset.abonnementId;
+                    currentAmount = parseFloat(button.dataset.abonnementTarif);
+                    currentType = button.dataset.abonnementType;
+                    currentActivity = button.dataset.abonnementActivite;
+                    paymentAmount.textContent = currentAmount.toFixed(2);
+
+                    console.log('Starting payment for abonnement:', currentAbonnementId);
+
+                    try {
+                        // Create payment intent
+                        const response = await fetch('/api/stripe/payment-intent', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                amount: Math.round(currentAmount * 100), // in cents
+                                currency: 'usd',
+                                metadata: { abonnement_id: currentAbonnementId }
+                            }),
+                        });
+
+                        const data = await response.json();
+                        
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+
+                        paymentIntentId = data.paymentIntentId;
+                        showPaymentModal();
+                    } catch (error) {
+                        console.error('Payment error:', error);
+                        showPaymentModal(error.message);
+                    } finally {
+                        button.disabled = false;
+                        button.textContent = 'S\'abonner';
+                    }
+                });
+            });
+
+            // Handle payment form submission
+            paymentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                submitButton.disabled = true;
+                submitButton.classList.add('processing');
+                errorMessage.textContent = '';
+
+                try {
+                    // Create payment method
+                    const { paymentMethod, error } = await stripe.createPaymentMethod({
+                        type: 'card',
+                        card: card,
+                        billing_details: {
+                            name: '{{ app.user.prenom }} {{ app.user.nom }}',
+                        },
+                    });
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    // Confirm payment
+                    const confirmResponse = await fetch('/api/stripe/payment-intent/confirm', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            paymentIntentId: paymentIntentId,
+                            paymentMethodId: paymentMethod.id,
+                            abonnementId: currentAbonnementId,
+                            amount: Math.round(currentAmount * 100),
+                            currency: 'usd'
+                        }),
+                    });
+
+                    const confirmData = await confirmResponse.json();
+                    
+                    if (confirmData.error) {
+                        throw new Error(confirmData.error);
+                    }
+
+                    // Payment succeeded
+                    if (confirmData.status === 'succeeded') {
+                        console.log('Payment succeeded for abonnement:', currentAbonnementId);
+                        
+                        // Set confirmation details
+                        confirmationType.textContent = currentType;
+                        confirmationActivity.textContent = currentActivity;
+                        confirmationStart.textContent = formatDate(new Date());
+                        
+                        // Calculate end date
+                        const endDate = new Date();
+                        switch (currentType.toLowerCase()) {
+                            case 'mois': endDate.setMonth(endDate.getMonth() + 1); break;
+                            case 'trimestre': endDate.setMonth(endDate.getMonth() + 3); break;
+                            case 'année': endDate.setFullYear(endDate.getFullYear() + 1); break;
+                            default: endDate.setMonth(endDate.getMonth() + 1);
+                        }
+                        confirmationEnd.textContent = formatDate(endDate);
+
+                        // Show QR code
+                        showQrCode();
+                        
+                        // Close payment modal and show confirmation
+                        closePaymentModal();
+                        confirmationModal.classList.add('active');
+                    } else {
+                        throw new Error('Paiement non complété: ' + confirmData.status);
+                    }
+                } catch (error) {
+                    console.error('Payment processing error:', error);
+                    errorMessage.textContent = error.message;
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('processing');
+                }
+            });
+
+            // Close modal handlers
+            closeModal.addEventListener('click', closePaymentModal);
+            closeConfirmation.addEventListener('click', () => {
+                confirmationModal.classList.remove('active');
+            });
+            confirmationButton.addEventListener('click', () => {
+                confirmationModal.classList.remove('active');
+                window.location.href = '{{ path('sportif_abonnements') }}';
+            });
+
+            // Close modals when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === paymentModal) closePaymentModal();
+                if (e.target === confirmationModal) confirmationModal.classList.remove('active');
+            });
+        });
+    </script>
+{% endblock %}

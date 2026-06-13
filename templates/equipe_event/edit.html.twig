@@ -1,0 +1,833 @@
+{% extends 'responsable/homepage_responsable.html.twig' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        .navbar-form.nav-search { display: block !important; }
+        .navbar-header { justify-content: flex-end !important; }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+        }
+        .image-preview-container {
+            min-height: 200px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-preview {
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        .is-invalid {
+            border: 1px solid #dc3545 !important;
+        }
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.875em;
+        }
+        .border-dashed { border: 2px dashed #dee2e6; }
+        .image-upload-container:hover .border-dashed { border-color: #3a7bd5; }
+        #map {
+            width: 100%;
+            height: 400px;
+            margin-top: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            z-index: 1;
+        }
+        .leaflet-container {
+            height: 100%;
+            width: 100%;
+        }
+        #submitBtn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        #charCount {
+            font-weight: bold;
+            color: #3a7bd5;
+        }
+        .text-danger {
+            color: #dc3545 !important;
+        }
+        .input-group-text {
+            min-width: 45px;
+            justify-content: center;
+        }
+        .team-list {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .team-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .remove-team-btn, .edit-team-btn {
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .remove-team-btn {
+            color: #dc3545;
+        }
+        .edit-team-btn {
+            color: #3a7bd5;
+        }
+        .modal-content {
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+        <div>
+            <h3 class="fw-bold mb-3">{{ page_title }}</h3>
+            <h6 class="op-7 mb-2">Edit team-event association</h6>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <div class="card card-round shadow-lg">
+        <div class="card-body p-5">
+            {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'class': 'needs-validation modern-form', 'id': 'eventForm', 'novalidate': 'novalidate'}}) }}
+
+                <div class="form-group mb-4">
+                    <label for="events_nom" class="form-label fw-bold text-muted small">EVENT NAME</label>
+                    {{ form_widget(form.nom, {'attr': {'class': 'form-control form-control-lg border-0 bg-light rounded-3', 'placeholder': 'Enter event name', 'required': 'required'}}) }}
+                    <div class="invalid-feedback">The event name is required.</div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="form-label fw-bold text-muted small">EVENT IMAGE</label>
+                    <div class="image-upload-container">
+                        <div class="image-preview-container text-center mb-3 position-relative">
+                            <img id="imagePreview" src="{{ equipe_event.event.imageUrl ? asset(equipe_event.event.imageUrl) : '' }}" class="img-fluid rounded-3 shadow-sm mx-auto d-block" style="max-height: 300px; object-fit: contain; {{ equipe_event.event.imageUrl ? '' : 'display: none;' }}">
+                            <div id="placeholderText" class="position-absolute top-50 start-50 translate-middle w-100 py-5 border-2 border-dashed rounded-3 bg-light" style="{{ equipe_event.event.imageUrl ? 'display: none;' : '' }}">
+                                <i class="fas fa-image fa-3x text-muted mb-3 d-block"></i>
+                                <p class="text-muted mb-0">No image selected</p>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column flex-md-row gap-3">
+                            <div class="flex-grow-1">
+                                <input type="file" class="form-control d-none" id="eventImage" name="events[imageFile]" accept="image/*">
+                                <label for="eventImage" class="btn btn-outline-primary w-100 py-3 rounded-3">
+                                    <i class="fas fa-cloud-upload-alt me-2"></i> Choose Image
+                                </label>
+                            </div>
+                            <button type="button" id="removeImageBtn" class="btn btn-outline-danger py-3 rounded-3" style="{{ equipe_event.event.imageUrl ? '' : 'display: none;' }}">
+                                <i class="fas fa-trash-alt me-2"></i> Remove
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">Please select an image.</div>
+                        <small class="text-muted d-block mt-2">Recommended size: 1200x800px (JPG, PNG or WEBP)</small>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="events_date" class="form-label fw-bold text-muted small">DATE</label>
+                    {{ form_widget(form.date, {'attr': {'class': 'form-control form-control-lg border-0 bg-light rounded-3', 'required': 'required'}}) }}
+                    <div class="invalid-feedback">The date is required.</div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label for="events_heure_debut" class="form-label fw-bold text-muted small">START TIME</label>
+                        {{ form_widget(form.heure_debut, {'attr': {'class': 'form-control form-control-lg border-0 bg-light rounded-3', 'required': 'required'}}) }}
+                        <div class="invalid-feedback">The start time is required.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="events_heure_fin" class="form-label fw-bold text-muted small">END TIME</label>
+                        {{ form_widget(form.heure_fin, {'attr': {'class': 'form-control form-control-lg border-0 bg-light rounded-3', 'required': 'required'}}) }}
+                        <div class="invalid-feedback">The end time is required.</div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="events_type" class="form-label fw-bold text-muted small">EVENT TYPE</label>
+                    {{ form_widget(form.type, {'attr': {'class': 'form-control form-control-lg border-0 bg-light rounded-3', 'required': 'required'}}) }}
+                    <div class="invalid-feedback">Please select an event type.</div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="events_reward" class="form-label fw-bold text-muted small">REWARD</label>
+                    {{ form_widget(form.reward, {'attr': {'class': 'form-control form-control-lg border-0 bg-light rounded-3', 'required': 'required'}}) }}
+                    <div class="invalid-feedback">Please select a reward.</div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="events_description" class="form-label fw-bold text-muted small">DESCRIPTION</label>
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control border-0 bg-light rounded-3', 'rows': '4', 'placeholder': 'Describe the event...', 'required': 'required'}}) }}
+                    <div class="invalid-feedback">The description is required.</div>
+                    <div class="form-text text-end"><span id="charCount">{{ equipe_event.event.description ? equipe_event.event.description|length : 0 }}</span>/500 characters</div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="events_lieu" class="form-label fw-bold text-muted small">LOCATION</label>
+                    <div class="input-group">
+                        {{ form_widget(form.lieu, {'attr': {'class': 'form-control form-control-lg border-0 bg-light rounded-3', 'placeholder': 'Enter the location', 'required': 'required'}}) }}
+                        <button type="button" id="searchLocationBtn" class="btn btn-outline-primary rounded-3">
+                            <i class="fas fa-search me-2"></i> Search
+                        </button>
+                    </div>
+                    <div class="invalid-feedback">The location is required.</div>
+                    <div id="map"></div>
+                    {{ form_widget(form.latitude, {'attr': {'id': 'events_latitude'}}) }}
+                    {{ form_widget(form.longitude, {'attr': {'id': 'events_longitude'}}) }}
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="form-label fw-bold text-muted small">TEAMS</label>
+                    <button type="button" id="addTeamsBtn" class="btn btn-outline-success btn-lg rounded-pill py-3 fw-bold" data-bs-toggle="modal" data-bs-target="#addTeamModal">
+                        <i class="fas fa-users me-2"></i> Add Team
+                    </button>
+                    <div id="teamList" class="team-list mt-3">
+                        <p class="text-muted">No teams selected yet.</p>
+                    </div>
+                    <input type="hidden" name="teams" id="teamsInput">
+                </div>
+
+                {{ form_row(form._token) }}
+
+                <div class="d-flex gap-2 mt-5 justify-content-end">
+                    <a href="{{ path('app_equipe_event') }}" class="btn btn-outline-secondary btn-lg rounded-pill py-3 fw-bold" id="cancelBtn">
+                        <i class="fas fa-times me-2"></i> Cancel
+                    </a>
+                    <button type="submit" id="submitBtn" class="btn btn-primary btn-lg rounded-pill py-3 fw-bold">
+                        <i class="fas fa-save me-2"></i> Save
+                    </button>
+                </div>
+
+            {{ form_end(form, {'render_rest': false}) }}
+        </div>
+    </div>
+
+    <div class="modal fade" id="addTeamModal" tabindex="-1" aria-labelledby="addTeamModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTeamModalLabel">Add or Edit Team</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ form_start(team_form, {'method': 'POST', 'attr': {'enctype': 'multipart/form-data', 'class': 'needs-validation', 'id': 'teamForm', 'novalidate': 'novalidate'}}) }}
+                        <div class="mb-3">
+                            <label for="equipe_nom" class="form-label fw-bold text-muted small">Team Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fas fa-heading text-primary"></i></span>
+                                <input type="text" id="equipe_nom" name="equipe[nom]" maxlength="255" class="form-control" placeholder="Enter team name" required="required"/>
+                            </div>
+                            <div class="invalid-feedback">Please enter a team name (max 255 characters).</div>
+                        </div>
+                        <div class="mb-3 image-upload-container">
+                            <label for="teamImageInput" class="form-label fw-bold text-muted small">Team Image</label>
+                            <div class="image-preview-container text-center mb-3 position-relative">
+                                <img id="teamImagePreview" src="" class="image-preview shadow-sm mx-auto d-block" style="display: none;">
+                                <div id="teamPlaceholderText" class="position-absolute top-50 start-50 translate-middle w-100 py-5 border-2 border-dashed rounded-3 bg-light">
+                                    <i class="fas fa-camera fa-3x text-muted mb-3 d-block"></i>
+                                    <p class="text-muted mb-0">No image selected</p>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-3">
+                                <div class="flex-grow-1">
+                                    <input type="file" id="teamImageInput" name="equipe[imageFile]" class="form-control d-none" accept="image/*"/>
+                                    <label for="teamImageInput" class="btn btn-outline-primary w-100 py-2"><i class="fas fa-camera me-2"></i>Choose Image</label>
+                                </div>
+                                <button type="button" id="teamRemoveImageBtn" class="btn btn-outline-danger py-2" style="display: none;"><i class="fas fa-trash-alt me-2"></i>Remove</button>
+                            </div>
+                            <div class="invalid-feedback">Please select a valid image (JPG, PNG, WEBP, max 2MB).</div>
+                            <small class="text-muted d-block mt-2">Recommended size: 1200x800px</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="equipe_niveau" class="form-label fw-bold text-muted small">Level</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fas fa-list text-primary"></i></span>
+                                <select id="equipe_niveau" name="equipe[niveau]" class="form-control form-select" required="required">
+                                    <option value="" disabled>Select a level</option>
+                                    <option value="DEBUTANT">Debutant</option>
+                                    <option value="INTERMEDIAIRE">Intermediaire</option>
+                                    <option value="AVANCE">Avance</option>
+                                    <option value="PROFESSIONNEL">Professionnel</option>
+                                </select>
+                            </div>
+                            <div class="invalid-feedback">Please select a level.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="equipe_nombre_membres" class="form-label fw-bold text-muted small">Number of Members</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fas fa-users text-primary"></i></span>
+                                <input type="number" id="equipe_nombre_membres" name="equipe[nombre_membres]" class="form-control" min="0" max="8" placeholder="Enter number of members" required="required"/>
+                            </div>
+                            <div class="invalid-feedback">Please enter a valid number of members (0-8).</div>
+                        </div>
+                        {{ form_row(team_form._token) }}
+                    {{ form_end(team_form, {'render_rest': false}) }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="saveTeamBtn" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // DOM elements for Event Form
+        const imageInput = document.getElementById('eventImage');
+        const imagePreview = document.getElementById('imagePreview');
+        const placeholderText = document.getElementById('placeholderText');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const form = document.getElementById('eventForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const locationInput = document.getElementById('events_lieu');
+        const searchLocationBtn = document.getElementById('searchLocationBtn');
+        const mapContainer = document.getElementById('map');
+        const latitudeInput = document.getElementById('events_latitude');
+        const longitudeInput = document.getElementById('events_longitude');
+        const charCount = document.getElementById('charCount');
+        const descriptionInput = document.getElementById('events_description');
+        const teamList = document.getElementById('teamList');
+        const teamsInput = document.getElementById('teamsInput');
+        const addTeamsBtn = document.getElementById('addTeamsBtn');
+        const addTeamModalEl = document.getElementById('addTeamModal');
+        const addTeamModal = new bootstrap.Modal(addTeamModalEl);
+
+        // DOM elements for Team Form (Modal)
+        const teamForm = document.getElementById('teamForm');
+        const teamImageInput = document.getElementById('teamImageInput');
+        const teamImagePreview = document.getElementById('teamImagePreview');
+        const teamPlaceholderText = document.getElementById('teamPlaceholderText');
+        const teamRemoveImageBtn = document.getElementById('teamRemoveImageBtn');
+        const saveTeamBtn = document.getElementById('saveTeamBtn');
+
+        // Check if critical elements exist
+        if (!locationInput || !latitudeInput || !longitudeInput || !searchLocationBtn || !form || !submitBtn || !mapContainer || !descriptionInput || !teamList || !teamsInput || !addTeamsBtn || !addTeamModalEl || !teamForm || !teamImageInput || !saveTeamBtn) {
+            console.error('One or more critical DOM elements are missing');
+            return;
+        }
+
+        // Initialize Leaflet Map
+        let map;
+        let marker;
+        try {
+            map = L.map('map').setView([{{ equipe_event.event.latitude ?: 36.8065 }}, {{ equipe_event.event.longitude ?: 10.1815 }}], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            marker = L.marker([{{ equipe_event.event.latitude ?: 36.8065 }}, {{ equipe_event.event.longitude ?: 10.1815 }}]).addTo(map)
+                .bindPopup('Event Location')
+                .openPopup();
+        } catch (error) {
+            console.error('Error initializing map:', error);
+        }
+
+        // Character count for description
+        function updateCharCount() {
+            const length = descriptionInput.value.length;
+            charCount.textContent = `${length}/500`;
+            charCount.classList.toggle('text-danger', length > 500);
+        }
+        descriptionInput.addEventListener('input', updateCharCount);
+        updateCharCount();
+
+        // Team management
+        let addedTeams = [];
+        let isEditingTeam = false;
+        let editingTeamId = null;
+        const equipeNewUrl = '{{ path('app_equipe_new') }}';
+        const equipeEditBaseUrl = '/equipe/edit/'; // Base URL without ID, appended dynamically
+
+        function updateTeamList() {
+            teamList.innerHTML = '';
+            if (addedTeams.length === 0) {
+                teamList.innerHTML = '<p class="text-muted">No teams selected yet.</p>';
+            } else {
+                addedTeams.forEach(team => {
+                    const teamItem = document.createElement('div');
+                    teamItem.className = 'team-item';
+                    teamItem.innerHTML = `
+                        <span>${team.nom}</span>
+                        <div>
+                            <i class="fas fa-edit edit-team-btn" data-id="${team.id}"></i>
+                            <i class="fas fa-times remove-team-btn" data-id="${team.id}"></i>
+                        </div>
+                    `;
+                    teamList.appendChild(teamItem);
+                });
+
+                document.querySelectorAll('.remove-team-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const teamId = this.getAttribute('data-id');
+                        addedTeams = addedTeams.filter(team => team.id != teamId);
+                        updateTeamList();
+                        updateTeamsInput();
+                    });
+                });
+
+                document.querySelectorAll('.edit-team-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const teamId = this.getAttribute('data-id');
+                        const team = addedTeams.find(t => t.id == teamId);
+                        if (team) {
+                            isEditingTeam = true;
+                            editingTeamId = teamId;
+                            teamForm.action = equipeEditBaseUrl + teamId;
+                            document.getElementById('equipe_nom').value = team.nom || '';
+                            document.getElementById('equipe_niveau').value = team.niveau || '';
+                            document.getElementById('equipe_nombre_membres').value = team.nombre_membres || '';
+                            if (team.imageFile) {
+                                teamImagePreview.src = team.imageFile;
+                                teamImagePreview.style.display = 'block';
+                                teamPlaceholderText.style.display = 'none';
+                                teamRemoveImageBtn.style.display = 'block';
+                            } else {
+                                teamImagePreview.src = '';
+                                teamImagePreview.style.display = 'none';
+                                teamPlaceholderText.style.display = 'block';
+                                teamRemoveImageBtn.style.display = 'none';
+                            }
+                            addTeamModal.show();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Invalid team ID.'
+                            });
+                        }
+                    });
+                });
+            }
+        }
+
+        function updateTeamsInput() {
+            teamsInput.value = JSON.stringify(addedTeams.map(team => team.id));
+        }
+
+        // Fetch event data and teams
+        fetch('{{ path('app_equipe_event_edit', {'id': equipe_event.id}) }}', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('events_nom').value = data.nom || '';
+            document.getElementById('events_date').value = data.date || '';
+            document.getElementById('events_heure_debut').value = data.heure_debut || '';
+            document.getElementById('events_heure_fin').value = data.heure_fin || '';
+            document.getElementById('events_type').value = data.type || '';
+            document.getElementById('events_reward').value = data.reward || '';
+            document.getElementById('events_description').value = data.description || '';
+            document.getElementById('events_lieu').value = data.lieu || '';
+            document.getElementById('events_latitude').value = data.latitude || '';
+            document.getElementById('events_longitude').value = data.longitude || '';
+
+            if (data.imageFile) {
+                imagePreview.src = data.imageFile;
+                imagePreview.style.display = 'block';
+                placeholderText.style.display = 'none';
+                removeImageBtn.style.display = 'block';
+            }
+
+            addedTeams = data.teams || [];
+            updateTeamList();
+            updateTeamsInput();
+
+            if (data.latitude && data.longitude) {
+                map.setView([data.latitude, data.longitude], 15);
+                marker.setLatLng([data.latitude, data.longitude]);
+                marker.bindPopup(`<b>${data.lieu}</b>`).openPopup();
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching event data:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to load event data.'
+            });
+        });
+
+        // Open modal with team form for adding new team
+        addTeamsBtn.addEventListener('click', function() {
+            isEditingTeam = false;
+            editingTeamId = null;
+            teamForm.action = equipeNewUrl;
+            teamForm.reset();
+            teamImagePreview.src = '';
+            teamImagePreview.style.display = 'none';
+            teamPlaceholderText.style.display = 'block';
+            teamRemoveImageBtn.style.display = 'none';
+            addTeamModal.show();
+        });
+
+        // Save new or edited team
+        saveTeamBtn.addEventListener('click', function() {
+            if (!validateTeamForm()) return;
+
+            const formData = new FormData(teamForm);
+            saveTeamBtn.disabled = true;
+            saveTeamBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+            fetch(teamForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                saveTeamBtn.disabled = false;
+                saveTeamBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save';
+                if (data.success && data.teamId && data.nom) {
+                    if (isEditingTeam && editingTeamId) {
+                        addedTeams = addedTeams.map(team => team.id == editingTeamId ? {
+                            id: data.teamId,
+                            nom: data.nom,
+                            niveau: data.niveau,
+                            nombre_membres: data.nombre_membres,
+                            imageFile: data.imageFile
+                        } : team);
+                    } else {
+                        addedTeams.push({
+                            id: data.teamId,
+                            nom: data.nom,
+                            niveau: data.niveau,
+                            nombre_membres: data.nombre_membres,
+                            imageFile: data.imageFile
+                        });
+                    }
+                    updateTeamList();
+                    updateTeamsInput();
+                    addTeamModal.hide();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: isEditingTeam ? 'Team updated successfully!' : 'Team added successfully!'
+                    });
+                    isEditingTeam = false;
+                    editingTeamId = null;
+                    teamForm.action = equipeNewUrl;
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to save team.'
+                    });
+                }
+            })
+            .catch(error => {
+                saveTeamBtn.disabled = false;
+                saveTeamBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save';
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while saving the team.'
+                });
+            });
+        });
+
+        // Handle image selection for event
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                if (!file.type.match('image.*')) {
+                    showError(imageInput, 'Please select a valid image file');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    placeholderText.style.display = 'none';
+                    removeImageBtn.style.display = 'block';
+                    clearError(imageInput);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle remove image for event
+        removeImageBtn.addEventListener('click', function() {
+            imageInput.value = '';
+            imagePreview.src = '';
+            imagePreview.style.display = 'none';
+            placeholderText.style.display = 'block';
+            this.style.display = 'none';
+            const removeImageInput = document.createElement('input');
+            removeImageInput.type = 'hidden';
+            removeImageInput.name = 'remove_image';
+            removeImageInput.value = '1';
+            form.appendChild(removeImageInput);
+        });
+
+        // Handle team image selection
+        teamImageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                if (!file.type.match('image.*')) {
+                    showError(teamImageInput, 'Please select a valid image file');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    teamImagePreview.src = e.target.result;
+                    teamImagePreview.style.display = 'block';
+                    teamPlaceholderText.style.display = 'none';
+                    teamRemoveImageBtn.style.display = 'block';
+                    clearError(teamImageInput);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle team image removal
+        teamRemoveImageBtn.addEventListener('click', function() {
+            teamImageInput.value = '';
+            teamImagePreview.src = '';
+            teamImagePreview.style.display = 'none';
+            teamPlaceholderText.style.display = 'block';
+            this.style.display = 'none';
+            const removeTeamImageInput = document.createElement('input');
+            removeTeamImageInput.type = 'hidden';
+            removeTeamImageInput.name = 'remove_team_image';
+            removeTeamImageInput.value = '1';
+            teamForm.appendChild(removeTeamImageInput);
+        });
+
+        // Search location
+        searchLocationBtn.addEventListener('click', function() {
+            const address = locationInput.value.trim();
+            if (!address) {
+                showError(locationInput, 'Please enter a location');
+                return;
+            }
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        map.setView([lat, lon], 15);
+                        marker.setLatLng([lat, lon]);
+                        marker.bindPopup(`<b>${address}</b>`).openPopup();
+                        latitudeInput.value = lat;
+                        longitudeInput.value = lon;
+                        clearError(locationInput);
+                    } else {
+                        showError(locationInput, 'Location not found.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching location:', error);
+                    showError(locationInput, 'Error fetching location.');
+                });
+        });
+
+        // Map click handler
+        map.on('click', function(e) {
+            const { lat, lng } = e.latlng;
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(response => response.json())
+                .then(data => {
+                    const address = data.display_name || 'Selected Location';
+                    marker.setLatLng([lat, lng]);
+                    marker.bindPopup(`<b>${address}</b>`).openPopup();
+                    locationInput.value = address;
+                    latitudeInput.value = lat;
+                    longitudeInput.value = lng;
+                    clearError(locationInput);
+                })
+                .catch(error => {
+                    console.error('Error in reverse geocoding:', error);
+                    showError(locationInput, 'Error fetching location.');
+                });
+        });
+
+        // Form validation for event
+        function validateForm() {
+            let isValid = true;
+            const fields = [
+                { input: document.getElementById('events_nom'), message: 'Please enter an event name.' },
+                { input: document.getElementById('events_date'), message: 'Please select a date.' },
+                { input: document.getElementById('events_heure_debut'), message: 'Please select a start time.' },
+                { input: document.getElementById('events_heure_fin'), message: 'Please select an end time.' },
+                { input: document.getElementById('events_type'), message: 'Please select an event type.' },
+                { input: document.getElementById('events_reward'), message: 'Please select a reward.' },
+                { input: document.getElementById('events_description'), message: 'Please enter a description.' },
+                { input: document.getElementById('events_lieu'), message: 'Please enter a location.' },
+                { input: document.getElementById('events_latitude'), message: 'Please select a location on the map.' },
+                { input: document.getElementById('events_longitude'), message: 'Please select a location on the map.' }
+            ];
+
+            fields.forEach(field => {
+                if (!field.input.value.trim()) {
+                    showError(field.input, field.message);
+                    isValid = false;
+                } else {
+                    clearError(field.input);
+                }
+            });
+
+            if (descriptionInput.value.length > 500) {
+                showError(descriptionInput, 'Description must not exceed 500 characters.');
+                isValid = false;
+            }
+
+            if (addedTeams.length === 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'At least one team is required.'
+                });
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Validate Team Form
+        function validateTeamForm() {
+            let isValid = true;
+            const fields = [
+                { input: document.getElementById('equipe_nom'), message: 'Please enter a team name.' },
+                { input: document.getElementById('equipe_niveau'), message: 'Please select a level.' },
+                { input: document.getElementById('equipe_nombre_membres'), message: 'Please enter a valid number of members (0-8).' }
+            ];
+
+            fields.forEach(field => {
+                if (!field.input.value.trim()) {
+                    showError(field.input, field.message);
+                    isValid = false;
+                } else {
+                    clearError(field.input);
+                }
+            });
+
+            const membres = parseInt(document.getElementById('equipe_nombre_membres').value);
+            if (isNaN(membres) || membres < 0 || membres > 8) {
+                showError(document.getElementById('equipe_nombre_membres'), 'Number of members must be between 0 and 8.');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Form submission for event
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!validateForm()) return;
+
+            const formData = new FormData(form);
+            formData.set('teams', teamsInput.value);
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save me-2"></i> Save';
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Event Updated',
+                        text: 'The event and team associations have been updated successfully!'
+                    }).then(() => {
+                        window.location.href = data.redirect || '{{ path('app_equipe_event') }}';
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to update team event association.'
+                    });
+                }
+            })
+            .catch(error => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save me-2"></i> Save';
+                console.error('Submission error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred.'
+                });
+            });
+        });
+
+        // Cancel button
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '{{ path('app_equipe_event') }}';
+        });
+
+        // Error handling functions
+        function showError(input, message) {
+            input.classList.add('is-invalid');
+            let errorElement = input.parentElement.querySelector('.invalid-feedback');
+            if (!errorElement) {
+                errorElement = document.createElement('div');
+                errorElement.className = 'invalid-feedback';
+                input.parentElement.appendChild(errorElement);
+            }
+            errorElement.textContent = message;
+        }
+
+        function clearError(input) {
+            input.classList.remove('is-invalid');
+            const errorElement = input.parentElement.querySelector('.invalid-feedback');
+            if (errorElement) errorElement.remove();
+        }
+
+        // Modal cleanup
+        addTeamModalEl.addEventListener('hidden.bs.modal', function() {
+            document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            isEditingTeam = false;
+            editingTeamId = null;
+            teamForm.action = equipeNewUrl;
+            teamForm.reset();
+            teamImagePreview.src = '';
+            teamImagePreview.style.display = 'none';
+            teamPlaceholderText.style.display = 'block';
+            teamRemoveImageBtn.style.display = 'none';
+        });
+    });
+    </script>
+{% endblock %}

@@ -1,0 +1,342 @@
+{% extends 'sportif/base.html.twig' %}
+
+{% block body %}
+    <!-- Hero Section -->
+    <section class="hero-section" style="background: linear-gradient(135deg, #000000 0%, #e67e22 100%);">
+        <div class="container">
+            <div class="hero-content text-center py-5">
+                <h1 class="display-4 text-white mb-3">Événements Sportifs</h1>
+                <p class="lead text-light mb-4">Découvrez notre calendrier des compétitions et activités</p>
+                <a href="#modern-calendar" class="btn btn-warning btn-lg px-4 fw-bold">Voir le calendrier</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Calendrier Section - Version Moderne -->
+    <section class="modern-calendar-section" id="modern-calendar-section">
+        <div class="container py-5">
+            <div class="calendar-header mb-5 text-center">
+                <h2 class="calendar-title display-5 fw-bold">Calendrier des Cours</h2>
+                <p class="calendar-subtitle fs-5 text-muted">Ne manquez aucun de nos cours</p>
+                <div class="divider mx-auto my-4" style="width: 80px; height: 4px; background: linear-gradient(90deg, #e67e22, #000000); border-radius: 2px;"></div>
+            </div>
+            
+            <div class="card shadow-lg border-0 overflow-hidden">
+                <div class="card-body p-0">
+                    <div id="modern-calendar"></div>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    {% block stylesheets %}
+        {{ parent() }}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <style>
+            :root {
+                --primary-color:rgb(0, 0, 0);  /* Orange principal */
+                --primary-dark: #d35400;   /* Orange foncé */
+                --secondary-color: #000000; /* Noir */
+                --light-orange: #f39c12;   /* Orange clair */
+                --dark-color: #2d3436;      /* Noir anthracite */
+                --light-color: #f5f6fa;    /* Gris très clair */
+            }
+            
+            body {
+                font-family: 'Montserrat', sans-serif;
+                color: #333;
+                background-color: #f8f9fa;
+            }
+            
+            /* Hero Section */
+            .hero-section {
+                padding: 120px 0;
+                position: relative;
+                overflow: hidden;
+                background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%) !important;
+            }
+            
+            .hero-section::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: url('https://images.unsplash.com/photo-1547347298-4074fc3086f0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center;
+                background-size: cover;
+                opacity: 0.15;
+                z-index: 0;
+            }
+            
+            .hero-content {
+                position: relative;
+                z-index: 1;
+            }
+            
+            /* Modern Calendar Section */
+            .modern-calendar-section {
+                padding: 80px 0;
+                background: white;
+                position: relative;
+            }
+            
+            .calendar-title {
+                font-size: 2.8rem;
+                font-weight: 800;
+                color: var(--secondary-color);
+                margin-bottom: 10px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            
+            .calendar-subtitle {
+                font-size: 1.2rem;
+                color: #7f8c8d;
+                font-weight: 400;
+            }
+            
+            /* Calendar Styles */
+            #modern-calendar {
+                padding: 20px;
+                height: 800px;
+            }
+            
+            .fc {
+                font-family: 'Montserrat', sans-serif;
+            }
+            
+            .fc-toolbar-title {
+                font-size: 1.6rem;
+                font-weight: 700;
+                color: var(--secondary-color);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            
+            .fc-button {
+                background-color: white !important;
+                color: var(--primary-color) !important;
+                border: 2px solid var(--primary-color) !important;
+                border-radius: 6px !important;
+                padding: 8px 15px !important;
+                font-weight: 600;
+                font-size: 0.8rem;
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .fc-button:hover {
+                background-color: var(--primary-color) !important;
+                color: white !important;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3);
+            }
+            
+            .fc-button-primary:not(:disabled).fc-button-active {
+                background-color: var(--primary-dark) !important;
+                border-color: var(--primary-dark) !important;
+                color: white !important;
+            }
+            
+            /* Header */
+            .fc-col-header-cell {
+                background-color: var(--secondary-color);
+                color: white;
+                padding: 12px 0;
+                font-weight: 600;
+                border: none !important;
+                text-transform: uppercase;
+                font-size: 0.9rem;
+            }
+            
+            /* Day cells */
+            .fc-daygrid-day {
+                border: 1px solid #e0e0e0 !important;
+                transition: all 0.2s ease;
+            }
+            
+            .fc-daygrid-day:hover {
+                background-color: #f5f5f5;
+            }
+            
+            /* Today */
+            .fc-day-today {
+                background-color: rgba(230, 126, 34, 0.1) !important;
+            }
+            
+            .fc-day-today .fc-daygrid-day-number {
+                color: var(--primary-dark);
+                font-weight: 700;
+                font-size: 1.1em;
+            }
+            
+            /* Events */
+            .fc-event {
+                border: none;
+                border-radius: 4px;
+                padding: 8px 10px;
+                font-size: 0.85rem;
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+                margin: 3px 0;
+                transition: all 0.3s ease;
+                border-left: 4px solid var(--primary-color);
+                background-color: white;
+                color: var(--dark-color);
+            }
+            
+            .fc-event:hover {
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+                transform: translateY(-3px);
+            }
+            
+            .fc-event-main {
+                display: flex;
+                align-items: center;
+            }
+            
+            .fc-event-time {
+                font-weight: 600;
+                margin-right: 5px;
+                color: var(--primary-dark);
+            }
+            
+            /* Bouton Ajouter Événement */
+            #add-event-btn {
+                background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-dark) 100%);
+                border: none;
+                padding: 12px 30px;
+                font-size: 1rem;
+                letter-spacing: 1px;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+            
+            #add-event-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+                background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-color) 100%);
+            }
+            
+            /* Responsive */
+            @media (max-width: 992px) {
+                #modern-calendar {
+                    height: 700px;
+                }
+                
+                .hero-section {
+                    padding: 100px 0;
+                }
+            }
+            
+            @media (max-width: 768px) {
+                .calendar-title {
+                    font-size: 2.2rem;
+                }
+                
+                .fc-toolbar {
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                
+                .fc-toolbar-title {
+                    font-size: 1.3rem;
+                    order: -1;
+                }
+                
+                #modern-calendar {
+                    height: 600px;
+                    padding: 10px;
+                }
+            }
+            
+            @media (max-width: 576px) {
+                .hero-section {
+                    padding: 80px 0;
+                }
+                
+                .hero-content h1 {
+                    font-size: 2.5rem;
+                }
+                
+                .calendar-title {
+                    font-size: 1.8rem;
+                }
+                
+                #modern-calendar {
+                    height: 500px;
+                }
+                
+                #add-event-btn {
+                    width: 100%;
+                    padding: 12px;
+                }
+            }
+        </style>
+    {% endblock %}
+
+    {% block javascripts %}
+    {{ parent() }}
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('modern-calendar'); // Corrigez l'ID ici
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                firstDay: 1,
+                navLinks: true,
+                nowIndicator: true,
+                dayMaxEvents: true,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay listWeek'
+                },
+                buttonText: {
+                    today: 'Aujourd\'hui',
+                    month: 'Mois',
+                    week: 'Semaine',
+                    day: 'Jour',
+                    list: 'Liste'
+                },
+                events: {{ events|json_encode|raw }}, // Passez les événements ici
+                editable: false,
+                eventContent: function(info) {
+                    return {
+                        html: `
+                            <div class="d-flex align-items-center" style="color:#000;">
+                                <div style="width:12px; height:12px; background:${info.event.backgroundColor}; 
+                                            border-radius:2px; margin-right:8px;"></div>
+                                <div>
+                                    <div class="fw-bold">${info.event.title}</div>
+                                    <small>${info.timeText}</small>
+                                </div>
+                            </div>
+                        `
+                    };
+                },
+                eventClick: function(info) {
+                    Swal.fire({
+                        title: info.event.title,
+                        html: `
+                            <p><strong>Horaire:</strong> ${info.event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${info.event.end ? info.event.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}</p>
+                            <p><strong>Activité:</strong> ${info.event.extendedProps.activite || 'Non spécifié'}</p>
+                            <p><strong>Salle:</strong> ${info.event.extendedProps.salle || 'Non spécifié'}</p>
+                            <p>${info.event.extendedProps.description || 'Pas de description'}</p>
+                        `,
+                        icon: 'info',
+                        confirmButtonColor: '#e67e22'
+                    });
+                }
+            });
+            calendar.render();
+        });
+    </script>
+{% endblock %}
+{% endblock %}

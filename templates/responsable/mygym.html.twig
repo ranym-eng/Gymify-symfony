@@ -1,0 +1,433 @@
+{% extends 'responsable/homepage_responsable.html.twig' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .dashboard-header {
+            background: var(--primary-gradient);
+            padding: 2.5rem;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            margin-bottom: 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-header::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+        
+        .info-card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            margin-bottom: 2rem;
+            background: white;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .card-header-modern {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1.5rem;
+            position: relative;
+        }
+        
+        .card-header-modern i {
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2.5rem;
+            opacity: 0.2;
+        }
+        
+        .info-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-item:hover {
+            background: rgba(245, 247, 250, 0.5);
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            height: 100%;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+            margin: 1rem 0;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem 0.5rem;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            text-align: center;
+            color: #4a5568;
+            text-decoration: none;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            color: #2d3748;
+        }
+        
+        .quick-action-btn i {
+            font-size: 1.75rem;
+            margin-bottom: 0.75rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+ 
+        /* Styles existants inchangés */
+        .filter-form {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .filter-form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        .filter-form h4 {
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        .filter-form .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .filter-form .form-control {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            padding-left: 2.5rem;
+            transition: all 0.3s ease;
+        }
+        .filter-form .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .filter-form .form-icon {
+            position: absolute;
+            top: 50%;
+            left: 0.75rem;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+        .filter-form .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .filter-form .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .filter-form .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .filter-form .btn-secondary:hover {
+            background: #cbd5e0;
+            transform: translateY(-2px);
+        }
+        .chart-card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            background: white;
+            margin-bottom: 2rem;
+        }
+        .chart-card .card-header-modern {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1.5rem;
+            position: relative;
+        }
+        .chart-card .card-header-modern i {
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2.5rem;
+            opacity: 0.2;
+        }
+    </style>
+{% endblock %}
+
+
+{% block body %}
+<div class="page-inner animate__animated animate__fadeIn">
+   <!-- Modern header -->
+    <div class="dashboard-header animate__animated animate__fadeInDown">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold display-4 mb-2">Welcome, {{ app.user.prenom }}</h1>
+                <p class="mb-0 opacity-75">Your gym dashboard</p>
+            </div>
+            <div class="text-end">
+                <h3 class="mb-0">{{ salle.nom }}</h3>
+                <small class="opacity-75">Your sports facility</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main column -->
+        <div class="col-lg-8">
+            <!-- Gym Information Card -->
+            <div class="info-card animate__animated animate__fadeInLeft">
+                <div class="card-header-modern">
+                    <h3 class="mb-0"><i class="fas fa-info-circle me-2"></i> Gym Information</h3>
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+                <div class="card-body p-0">
+                    <div class="info-item">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="fas fa-map-marker-alt me-2"></i>Address</h6>
+                                <p class="fw-bold">{{ salle.adresse }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="fas fa-phone me-2"></i>Phone</h6>
+                                <p class="fw-bold">{{ salle.numTel }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="fas fa-envelope me-2"></i>Email</h6>
+                                <p class="fw-bold">{{ salle.email }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="fas fa-clock me-2"></i>Opening Hours</h6>
+                                <p class="fw-bold">Monday-Friday: 7AM-10PM</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-item bg-light">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-lock text-primary me-3 fa-lg"></i>
+                            <p class="mb-0 text-muted">To modify this information, please contact administration.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <h4 class="mb-3 animate__animated animate__fadeIn">Quick Access</h4>
+            <div class="quick-actions animate__animated animate__fadeInUp">
+                <a href="{{ path('app_events_index') }}" class="quick-action-btn">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Events</span>
+                </a>
+                <a href="{{ path('responsable_abonnement_index') }}" class="quick-action-btn">
+                    <i class="fas fa-id-card"></i>
+                    <span>Subscriptions</span>
+                </a>
+                <a href="#" class="quick-action-btn">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Statistics</span>
+                </a>
+                <a href="#" class="quick-action-btn">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Secondary column - Form and Chart -->
+        <div class="col-lg-4 animate__animated animate__fadeInRight">
+            <!-- Formulaire de filtrage -->
+            <div class="filter-form animate__animated animate__fadeIn">
+                <h4 class="mb-3">Filter Sales Data</h4>
+                {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': ''}}) }}
+                <div class="form-group">
+                    <i class="fas fa-calendar-alt form-icon"></i>
+                    {{ form_widget(form.startDate, {'attr': {'class': 'form-control', 'placeholder': 'Start Date'}}) }}
+                    {{ form_label(form.startDate, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_errors(form.startDate) }}
+                </div>
+                <div class="form-group">
+                    <i class="fas fa-calendar-alt form-icon"></i>
+                    {{ form_widget(form.endDate, {'attr': {'class': 'form-control', 'placeholder': 'End Date'}}) }}
+                    {{ form_label(form.endDate, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_errors(form.endDate) }}
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">Apply</button>
+                    <a href="{{ path('app_responsable_mygym') }}" class="btn btn-secondary w-100">Reset</a>
+                </div>
+                {{ form_end(form) }}
+            </div>
+
+            <!-- Graphique des ventes -->
+            <div class="chart-card animate__animated animate__fadeIn mt-4">
+                <div class="card-header-modern">
+                    <h3 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Subscriptions Sales</h3>
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="card-body">
+                    {% if chartData.labels|length > 0 %}
+                        <canvas id="subscriptionsChart" height="300"></canvas>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            Aucune donnée de vente disponible pour la période sélectionnée.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+    <!-- Inclure Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+     // Animation on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wave effect on quick action buttons hover
+            const quickActions = document.querySelectorAll('.quick-action-btn');
+            quickActions.forEach(btn => {
+                btn.addEventListener('mouseenter', () => {
+                    btn.classList.add('animate__animated', 'animate__pulse');
+                });
+                btn.addEventListener('animationend', () => {
+                    btn.classList.remove('animate__animated', 'animate__pulse');
+                });
+            });
+
+            // Configuration du graphique Chart.js
+            {% if chartData.labels|length > 0 %}
+                const ctx = document.getElementById('subscriptionsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ chartData.labels|json_encode|raw }},
+                        datasets: {{ chartData.datasets|json_encode|raw }}
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                stacked: true, // Barres empilées
+                                title: {
+                                    display: true,
+                                    text: 'Number of Subscriptions'
+                                }
+                            },
+                            x: {
+                                stacked: true, // Barres empilées
+                                title: {
+                                    display: true,
+                                    text: 'Month'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        label += context.parsed.y + ' subscription(s)';
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutQuart'
+                        }
+                    }
+                });
+            {% endif %}
+        });
+    </script>
+{% endblock %}

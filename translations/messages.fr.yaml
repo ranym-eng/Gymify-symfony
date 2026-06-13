@@ -1,0 +1,92 @@
+# Interface générale
+search:
+  placeholder: "Rechercher..."
+  label: "Recherche"
+
+navbar:
+  greeting: "Bonjour"
+  guest: "Invité"
+  view_profile: "Voir Profil"
+  my_profile: "Mon Profil"
+  logout: "Déconnexion"
+  login: "Connexion"
+
+sidebar:
+  settings: "Paramètres"
+  language: "Langue"
+
+# Module Blog
+blog:
+  title: "Blogs"
+  my_blogs: "Mes Blogs"
+  all_blogs: "Tous les Blogs"
+  add_blog: "Ajouter un Blog"
+  edit_blog: "Modifier le Blog"
+  delete_blog: "Supprimer le Blog"
+  no_blogs: "Aucun blog trouvé"
+  created_at: "Créé le"
+  updated_at: "Mis à jour le"
+  created_by: "Créé par"
+  read_more: "Lire la suite"
+  back_to_list: "Retour à la liste"
+  save: "Enregistrer"
+  cancel: "Annuler"
+  confirm_delete: "Êtes-vous sûr de vouloir supprimer ce blog ?"
+  success:
+    created: "Blog créé avec succès !"
+    updated: "Blog mis à jour avec succès !"
+    deleted: "Blog supprimé avec succès !"
+  error:
+    create: "Erreur lors de la création du blog."
+    update: "Erreur lors de la mise à jour du blog."
+    delete: "Erreur lors de la suppression du blog."
+    image_both: "Veuillez choisir soit une image locale, soit une URL, pas les deux."
+    image_upload: "Erreur lors de l'upload de l'image."
+  form:
+    title: "Titre"
+    content: "Contenu"
+    image: "Image"
+    image_url: "URL de l'image"
+    submit: "Soumettre"
+    or_url: "ou entrez une URL d'image"
+  
+# Commentaires
+comment:
+  title: "Commentaires"
+  add: "Ajouter un commentaire"
+  edit: "Modifier le commentaire"
+  delete: "Supprimer le commentaire"
+  no_comments: "Aucun commentaire pour l'instant"
+  write: "Écrire un commentaire..."
+  submit: "Envoyer"
+  created_at: "Commenté le"
+  updated_at: "Modifié le"
+  confirm_delete: "Êtes-vous sûr de vouloir supprimer ce commentaire ?"
+  success:
+    created: "Commentaire ajouté avec succès !"
+    updated: "Commentaire mis à jour avec succès !"
+    deleted: "Commentaire supprimé avec succès !"
+  error:
+    create: "Erreur lors de l'ajout du commentaire."
+    update: "Erreur lors de la mise à jour du commentaire."
+    delete: "Erreur lors de la suppression du commentaire."
+    
+# Réactions
+reaction:
+  like: "J'aime"
+  love: "J'adore"
+  haha: "Haha"
+  wow: "Wow"
+  sad: "Triste"
+  angry: "Énervé"
+  
+# Statistiques
+stats:
+  title: "Statistiques"
+  my_stats: "Mes Statistiques"
+  global_stats: "Statistiques Globales"
+  posts_per_day: "Publications par jour"
+  comments_per_day: "Commentaires par jour"
+  reactions_distribution: "Distribution des réactions"
+  most_active_users: "Utilisateurs les plus actifs"
+  most_popular_posts: "Publications les plus populaires" 

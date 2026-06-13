@@ -1,0 +1,57 @@
+{% extends 'admin/homepageadmin.html.twig' %}
+
+{% block title %}Gestion des produits{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestion des produits</h1>
+        <a href="{{ path('admin_product_new') }}" class="btn btn-primary">Ajouter un produit</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Image</th>
+                    <th>Nom</th>
+                    <th>Prix</th>
+                    <th>Stock</th>
+                    <th>Catégorie</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for produit in produits %}
+                <tr>
+                    <td>{{ produit.idP }}</td>
+                    <td>
+                        {% if produit.imagePath %}
+                            <img src="{{ asset('uploads/products/' ~ produit.imagePath) }}" alt="{{ produit.nomP }}" style="max-width: 50px;">
+                        {% else %}
+                            <span class="text-muted">Pas d'image</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ produit.nomP }}</td>
+                    <td>{{ produit.prixP }} €</td>
+                    <td>{{ produit.stockP }}</td>
+                    <td>{{ produit.categorieP }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{{ path('admin_product_edit', {'id': produit.idP}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                            <form method="post" action="{{ path('admin_product_delete', {'id': produit.idP}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');" style="display: inline-block;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produit.idP) }}">
+                                <button class="btn btn-sm btn-danger">Supprimer</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">Aucun produit trouvé</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %} 

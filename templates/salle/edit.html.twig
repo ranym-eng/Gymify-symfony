@@ -1,0 +1,744 @@
+{% extends 'admin/homepageadmin.html.twig' %}
+
+{% block title %}Edit Gym Room{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-color: #6c757d;
+            --light-bg: #f8f9fa;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+        }
+        
+        .container-fluid {
+            max-width: 1400px;
+            padding: 2rem;
+        }
+        
+        .text-gradient {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .bg-gradient-primary {
+            background: var(--primary-gradient);
+        }
+        
+        .card {
+            border-radius: 1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            color: white;
+            border-bottom: none;
+            padding: 1.5rem 2rem;
+        }
+        
+        .floating-label-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .floating-input {
+            position: relative;
+            z-index: 2;
+            background: #fff;
+            padding-top: 1.25rem;
+            padding-bottom: 0.75rem;
+        }
+        
+        .floating-input:focus ~ .floating-label,
+        .floating-input:not(:placeholder-shown) ~ .floating-label {
+            top: -8px;
+            left: 12px;
+            font-size: 0.75rem;
+            background: #fff;
+            padding: 0 4px;
+            color: var(--primary-color);
+            font-weight: 500;
+            z-index: 1;
+        }
+        
+        .floating-label {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            transition: all 0.2s ease;
+            color: var(--secondary-color);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 0.5rem;
+            height: 50px;
+            padding: 1.25rem 1rem 0.75rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.2);
+        }
+        
+        .invalid-feedback {
+            font-size: 0.875rem;
+            color: var(--danger-color);
+            margin-top: 0.25rem;
+            position: relative;
+        }
+        
+        .valid-feedback {
+            font-size: 0.875rem;
+            color: var(--success-color);
+            margin-top: 0.25rem;
+            position: relative;
+        }
+        
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+        
+        .preview-image {
+            width: 120px;
+            height: 120px;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+            object-fit: cover;
+        }
+        
+        .remove-image-btn {
+            width: 28px;
+            height: 28px;
+            top: 0;
+            right: calc(50% - 60px);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            background-color: var(--danger-color);
+            color: white;
+            font-size: 14px;
+            line-height: 1;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .remove-image-btn:hover {
+            background-color: #c82333;
+            transform: scale(1.1);
+        }
+        
+        .upload-btn {
+            transition: all 0.2s ease;
+            border-radius: 0.5rem;
+            border: 1px dashed #cbd5e1;
+            background: #f8fafc;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        .upload-btn:hover {
+            background-color: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+        }
+        
+        #map-container {
+            margin-top: 1.5rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+        
+        #address-results {
+            position: absolute;
+            z-index: 1000;
+            background: white;
+            width: calc(100% - 2rem);
+            border-radius: 0.5rem;
+            max-height: 240px;
+            overflow-y: auto;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: none;
+            margin-top: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .address-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            color: #0f172a;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .address-item:last-child {
+            border-bottom: none;
+        }
+        
+        .address-item:hover {
+            background: #f8fafc;
+            color: var(--primary-color);
+        }
+        
+        .floating-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+            min-width: 300px;
+            animation: slideIn 0.5s forwards;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .hover-scale {
+            transition: transform 0.2s ease;
+        }
+        
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+        
+        @media (max-width: 576px) {
+            .container-fluid {
+                padding: 1.5rem;
+            }
+            .card-body {
+                padding: 1.5rem;
+            }
+            .btn-lg {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+            }
+            .preview-image {
+                width: 100px;
+                height: 100px;
+            }
+            .remove-image-btn {
+                right: calc(50% - 50px);
+            }
+            .floating-alert {
+                min-width: 90%;
+                right: 5%;
+            }
+            .form-control, .form-select {
+                height: 46px;
+                padding: 1rem 0.75rem 0.5rem;
+            }
+            .floating-input:focus ~ .floating-label,
+            .floating-input:not(:placeholder-shown) ~ .floating-label {
+                top: -7px;
+                font-size: 0.7rem;
+                padding: 0 3px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid px-4 py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="fw-bold text-gradient">
+                <i class="fas fa-edit me-2"></i>Edit Gym Room
+            </h1>
+            <a href="{{ path('admin_salle_index') }}" class="btn btn-outline-primary rounded-pill hover-scale">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+        </div>
+
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb bg-white p-3 rounded-3 shadow-sm">
+                <li class="breadcrumb-item"><a href="{{ path('app_admin') }}" class="text-decoration-none"><i class="fas fa-home me-1"></i> Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ path('admin_salle_index') }}" class="text-decoration-none"><i class="fas fa-dumbbell me-1"></i> Gym Rooms</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-edit me-1"></i> Edit</li>
+            </ol>
+        </nav>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }} alert-dismissible fade show shadow-sm floating-alert" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-{{ label == 'success' ? 'check-circle' : 'exclamation-triangle' }} me-2"></i>
+                        <span>{{ message }}</span>
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="card border-0 shadow-sm overflow-hidden rounded-4">
+            <div class="card-header bg-gradient-primary text-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-dumbbell me-2"></i>Gym Room Details
+                </h5>
+                <div class="badge bg-white text-primary rounded-pill">
+                    <i class="fas fa-asterisk me-1"></i> Required Fields
+                </div>
+            </div>
+            <div class="card-body p-4 p-md-5 bg-light">
+                {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': '', 'id': 'gym-form'}}) }}
+                
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="floating-label-group">
+                            {{ form_widget(form.nom, {'attr': {
+                                'class': 'form-control floating-input',
+                                'placeholder': 'Name',
+                                'required': 'required',
+                                'pattern': '.{3,50}',
+                                'title': 'Name must be between 3 and 50 characters'
+                            }}) }}
+                            {{ form_label(form.nom, 'Name', {'label_attr': {'class': 'floating-label'}}) }}
+                            <div class="invalid-feedback">
+                                Please provide a valid name (3-50 characters)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="floating-label-group">
+                            {{ form_widget(form.num_tel, {'attr': {
+                                'class': 'form-control floating-input',
+                                'placeholder': 'Phone Number',
+                                'required': 'required',
+                                'pattern': '\\+216\\s\\d{2}\\s\\d{3}\\s\\d{3}',
+                                'title': 'Phone number must be in format: +216 XX XXX XXX',
+                                'oninput': 'formatPhoneNumber(this)'
+                            }}) }}
+                            {{ form_label(form.num_tel, 'Phone Number', {'label_attr': {'class': 'floating-label'}}) }}
+                            <div class="invalid-feedback">
+                                Please provide a valid phone number (+216 XX XXX XXX)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="floating-label-group">
+                            {{ form_widget(form.email, {'attr': {
+                                'class': 'form-control floating-input',
+                                'placeholder': 'Email',
+                                'required': 'required',
+                                'type': 'email',
+                                'pattern': '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+                                'title': 'Email must be in format: a@g.c'
+                            }}) }}
+                            {{ form_label(form.email, 'Email', {'label_attr': {'class': 'floating-label'}}) }}
+                            <div class="invalid-feedback">
+                                Please provide a valid email (format: a@g.c)
+                            </div>
+                            <div class="valid-feedback">
+                                <i class="fas fa-check-circle me-1"></i> Valid email
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="floating-label-group">
+                            {{ form_widget(form.responsable, {'attr': {
+                                'class': 'form-select floating-input',
+                                'placeholder': 'Manager',
+                                'required': 'required'
+                            }}) }}
+                            {{ form_label(form.responsable, 'Manager', {'label_attr': {'class': 'floating-label'}}) }}
+                            <div class="invalid-feedback">
+                                Please select a manager
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="floating-label-group mb-4">
+                    {{ form_widget(form.details, {'attr': {
+                        'class': 'form-control floating-input',
+                        'placeholder': 'Description',
+                        'required': 'required',
+                        'style': 'height: 120px',
+                        'minlength': '10',
+                        'maxlength': '500',
+                        'title': 'Details must be between 10-500 characters'
+                    }}) }}
+                    {{ form_label(form.details, 'Description', {'label_attr': {'class': 'floating-label'}}) }}
+                    <div class="invalid-feedback">
+                        Please provide valid details (10-500 characters)
+                    </div>
+                </div>
+
+                {% if form.image is defined %}
+                <div class="mb-4">
+                    <label class="form-label fw-semibold d-flex align-items-center">
+                        <i class="fas fa-image me-2 text-primary"></i> Room Image
+                        <span class="badge bg-secondary-subtle text-secondary ms-2">Optional</span>
+                    </label>
+                    <div class="image-upload-wrapper">
+                        <button type="button" class="btn btn-outline-primary rounded-pill mb-3 upload-btn">
+                            <i class="fas fa-upload me-2"></i>Change Image
+                        </button>
+                        {{ form_widget(form.image, {'attr': {
+                            'class': 'd-none',
+                            'accept': 'image/jpeg,image/png,image/webp'
+                        }}) }}
+                        <div class="text-center position-relative">
+                            {% if form.vars.data and form.vars.data.urlPhoto %}
+                                <img id="image-preview" class="preview-image" src="{{ asset('Uploads/images/' ~ form.vars.data.urlPhoto) }}" alt="Current Image" style="display: block;">
+                                <button id="remove-image" class="btn remove-image-btn" style="display: flex;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            {% else %}
+                                <img id="image-preview" class="preview-image" alt="Image Preview">
+                                <button id="remove-image" class="btn remove-image-btn">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+                        <div class="form-text text-muted mt-2">
+                            Accepted formats: JPG, PNG, WebP (max 2MB)
+                        </div>
+                        <div class="invalid-feedback" id="image-error"></div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="floating-label-group mb-4">
+                    {{ form_widget(form.adresse, {'attr': {
+                        'id': 'salle_adresse',
+                        'class': 'form-control floating-input',
+                        'placeholder': 'Address',
+                        'required': 'required',
+                        'autocomplete': 'off'
+                    }}) }}
+                    {{ form_label(form.adresse, 'Address', {'label_attr': {'class': 'floating-label'}}) }}
+                    <div class="invalid-feedback">
+                        Please provide a valid address
+                    </div>
+                    <div id="address-results"></div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="form-label fw-semibold d-flex align-items-center mb-3">
+                        <i class="fas fa-map-marked-alt me-2 text-primary"></i> Location on Map
+                    </label>
+                    <p class="text-muted mb-3">Search for an address above or click on the map to set the location</p>
+                    <div id="map-container">
+                        <div id="map"></div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-5">
+                    <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 py-2 shadow-sm hover-scale">
+                        <i class="fas fa-save me-2"></i>Update Room
+                    </button>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Phone number formatting
+            function formatPhoneNumber(input) {
+                let value = input.value.replace(/\D/g, '');
+                if (value.length > 3) {
+                    value = value.replace(/^(\d{3})(\d{2})/, '$1 $2');
+                }
+                if (value.length > 6) {
+                    value = value.replace(/^(\d{3}\s\d{2})(\d{3})/, '$1 $2');
+                }
+                if (value.length > 10) {
+                    value = value.replace(/^(\d{3}\s\d{2}\s\d{3})(\d{3})/, '$1 $3');
+                }
+                if (!value.startsWith('+')) {
+                    value = '+' + value;
+                }
+                if (value.length > 13) {
+                    value = value.substring(0, 13);
+                }
+                input.value = value;
+            }
+
+            // Initialize map
+            const addressInput = document.getElementById('salle_adresse');
+            const addressResults = document.getElementById('address-results');
+            const form = document.querySelector('#gym-form');
+            
+            const map = L.map('map').setView([34, 9], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            let marker = null;
+            
+            if (addressInput.value) {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressInput.value)}&countrycodes=tn&limit=1`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            const item = data[0];
+                            placeMarker(parseFloat(item.lat), parseFloat(item.lon), item.display_name);
+                        }
+                    })
+                    .catch(error => console.error('Initial location error:', error));
+            }
+
+            function placeMarker(lat, lng, address) {
+                if (marker) map.removeLayer(marker);
+                marker = L.marker([lat, lng]).addTo(map)
+                    .bindPopup(address)
+                    .openPopup();
+                map.setView([lat, lng], 16);
+                addressInput.value = address;
+                validateField(addressInput);
+            }
+
+            map.on('click', function(e) {
+                const { lat, lng } = e.latlng;
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const address = data.display_name || "Address not available";
+                        placeMarker(lat, lng, address);
+                    })
+                    .catch(error => {
+                        console.error('Reverse geocoding error:', error);
+                        placeMarker(lat, lng, "Address not available");
+                    });
+            });
+
+            function searchAddress(query) {
+                if (query.length < 3) {
+                    addressResults.style.display = 'none';
+                    return;
+                }
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=tn&limit=5`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            addressResults.innerHTML = '';
+                            data.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'address-item';
+                                div.textContent = item.display_name;
+                                div.addEventListener('click', () => {
+                                    addressInput.value = item.display_name;
+                                    addressResults.style.display = 'none';
+                                    placeMarker(parseFloat(item.lat), parseFloat(item.lon), item.display_name);
+                                    validateField(addressInput);
+                                });
+                                addressResults.appendChild(div);
+                            });
+                            addressResults.style.display = 'block';
+                        } else {
+                            addressResults.style.display = 'none';
+                        }
+                    })
+                    .catch(error => console.error('Search error:', error));
+            }
+
+            let timeout;
+            addressInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => searchAddress(this.value), 300);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (e.target !== addressInput && !addressResults.contains(e.target)) {
+                    addressResults.style.display = 'none';
+                }
+            });
+
+            {% if form.image is defined %}
+            // Image upload functionality
+            const imageInput = document.querySelector('[name="salle[image]"]');
+            const imagePreview = document.querySelector('#image-preview');
+            const removeImageBtn = document.querySelector('#remove-image');
+            const uploadBtn = document.querySelector('.upload-btn');
+            const imageError = document.querySelector('#image-error');
+
+            uploadBtn.addEventListener('click', () => imageInput.click());
+
+            imageInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const validImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                    imageError.textContent = '';
+                    imageError.style.display = 'none';
+                    imageInput.classList.remove('is-invalid');
+                    
+                    if (!validImageTypes.includes(file.type)) {
+                        imageError.textContent = 'Please upload a valid image (JPEG, PNG, WebP).';
+                        imageError.style.display = 'block';
+                        imageInput.classList.add('is-invalid');
+                        return;
+                    }
+                    
+                    if (file.size > 2 * 1024 * 1024) {
+                        imageError.textContent = 'Image must not exceed 2MB.';
+                        imageError.style.display = 'block';
+                        imageInput.classList.add('is-invalid');
+                        return;
+                    }
+                    
+                    updateImagePreview(file);
+                }
+            });
+
+            function updateImagePreview(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    removeImageBtn.style.display = 'flex';
+                    imageError.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+
+            removeImageBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                imageInput.value = '';
+                imagePreview.style.display = 'none';
+                removeImageBtn.style.display = 'none';
+                imageError.textContent = '';
+                imageError.style.display = 'none';
+                imageInput.classList.remove('is-invalid');
+            });
+            {% endif %}
+
+            // Form validation
+            function validateField(input) {
+                input.classList.remove('is-valid', 'is-invalid');
+                
+                if (input.required && !input.value.trim()) {
+                    input.classList.add('is-invalid');
+                    return false;
+                }
+                
+                if (input.name === 'salle[num_tel]') {
+                    if (!/^\+216\s\d{2}\s\d{3}\s\d{3}$/.test(input.value)) {
+                        input.classList.add('is-invalid');
+                        return false;
+                    }
+                }
+                
+                if (input.type === 'email') {
+                    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(input.value)) {
+                        input.classList.add('is-invalid');
+                        return false;
+                    }
+                }
+                
+                if (input.pattern && !new RegExp(input.pattern).test(input.value)) {
+                    input.classList.add('is-invalid');
+                    return false;
+                }
+                
+                if (input.minlength && input.value.length < input.minlength) {
+                    input.classList.add('is-invalid');
+                    return false;
+                }
+                
+                if (input.maxlength && input.value.length > input.maxlength) {
+                    input.classList.add('is-invalid');
+                    return false;
+                }
+                
+                if (input.type === 'file' && input.files.length > 0) {
+                    const file = input.files[0];
+                    const validImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                    
+                    if (!validImageTypes.includes(file.type)) {
+                        input.classList.add('is-invalid');
+                        return false;
+                    }
+                    
+                    if (file.size > 2 * 1024 * 1024) {
+                        input.classList.add('is-invalid');
+                        return false;
+                    }
+                }
+                
+                if (input.value.trim() !== '') {
+                    input.classList.add('is-valid');
+                }
+                
+                return true;
+            }
+
+            const inputs = form.querySelectorAll('input:not([type="hidden"]), textarea, select');
+            inputs.forEach(input => {
+                input.addEventListener('blur', () => validateField(input));
+                input.addEventListener('input', () => {
+                    if (input.classList.contains('is-invalid')) {
+                        validateField(input);
+                    }
+                });
+            });
+
+            form.addEventListener('submit', function(event) {
+                let isValid = true;
+                inputs.forEach(input => {
+                    if (!validateField(input)) {
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const firstError = form.querySelector('.is-invalid');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+                form.classList.add('was-validated');
+            });
+        });
+    </script>
+{% endblock %}

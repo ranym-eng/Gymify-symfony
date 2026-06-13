@@ -1,0 +1,247 @@
+/* Amélioration du design des champs de formulaire */
+body, .form-control, .dropzone, .cke_contents iframe, .cke_chrome, .cke_top, .cke_bottom, h2 {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 1rem;
+}
+
+/* Comment content styling */
+.comment-content {
+  color: #333; /* Default text color for comments */
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* User mentions styling */
+.user-mention {
+  display: inline-block;
+  background-color: rgba(29, 155, 240, 0.1);
+  color: #00CED1; /* Turquoise blue color for mentions */
+  font-weight: 500;
+  border-radius: 4px;
+  padding: 0 3px;
+  transition: background-color 0.2s ease;
+  text-decoration: none;
+}
+
+.user-mention:hover {
+  background-color: rgba(0, 206, 209, 0.2);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Animation for highlighting newly added items */
+@keyframes highlight-new-item {
+    0% { background-color: rgba(13, 110, 253, 0.2); }
+    100% { background-color: transparent; }
+}
+
+/* Animation pour les compteurs quand ils sont mis à jour */
+@keyframes pulse-count {
+    0% { transform: scale(1); color: inherit; }
+    50% { transform: scale(1.5); color: #007bff; }
+    100% { transform: scale(1); color: inherit; }
+}
+
+/* Style pour les compteurs de commentaires */
+.comment-count {
+    transition: all 0.3s ease;
+}
+
+.comment-count.highlight {
+    animation: pulse-count 0.8s ease-in-out;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+.form-control, .dropzone {
+    border-radius: 10px;
+    padding: 15px;
+    font-size: 1.1em;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.8);
+    border-color: #007bff;
+}
+
+.dropzone {
+    border: 2px dashed #74C0FC !important;
+    padding: 30px;
+    background: #f9f9f9;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: background 0.3s ease, border-color 0.3s ease;
+    height: 323px;
+}
+
+.dropzone:hover {
+    background-color: #e7f3ff;
+    border-color: #74C0FC;
+}
+
+.dropzone .dz-message {
+    font-weight: bold;
+    color: #74C0FC !important;
+}
+
+.dropzone .dz-preview .dz-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+/* Message d'erreur plus visible */
+.text-danger {
+    color: #dc3545;
+    font-size: 0.9em;
+}
+
+.parsley-error {
+    border-color: #dc3545 !important;
+}
+
+.parsley-success {
+    border-color: #28a745 !important;
+}
+
+.parsley-errors-list {
+    margin-top: 5px;
+    padding: 0;
+    list-style: none;
+    color: #dc3545;
+    font-size: 0.9em;
+}
+
+/* Appliquer un border-radius à l'éditeur CKEditor */
+.cke {
+    height: 320px !important;
+}
+
+.cke_chrome {
+    border-radius: 10px !important;
+    overflow: hidden;
+    border: 3px solid #ebedf2 !important;
+    box-shadow: none !important;
+}
+
+.cke_top {
+    background: rgba(128, 192, 255, 0.663) !important; /* Bleu avec 85% d'opacité */
+    border-bottom: 1px solid #ebedf2  !important;
+    color: black !important; /* Texte éventuel en noir */
+}
+
+.cke_top a,
+.cke_top .cke_button_icon,
+.cke_top .cke_toolgroup {
+    color: inherit !important;
+    fill: inherit !important;
+    filter: none !important;
+}
+
+.cke_contents {
+    background-color: #f5f7fd !important; /* Blanc doux Bootstrap */
+    padding: 10px !important;
+    border-radius: 0 0 9px 9px !important;
+    height: 222px !important;
+}
+
+.cke_contents iframe {
+    background-color: #f5f7fd !important;
+    font-family: "Segoe UI", sans-serif !important;
+    color: #212529 !important; /* Texte Bootstrap */
+    border-radius: 0 0 9px 9px !important;
+}
+
+.cke_bottom {
+    background-color: #f5f7fd !important;
+    color: white !important;
+    border-top: 1px solid #f5f7fd !important;
+    border-radius: 0 0 9px 9px !important;
+    padding: 5px 10px !important;
+}
+
+.post-title-animated {
+    font-size: 2rem;
+    font-weight: 700;
+    color: rgba(36, 36, 36, 0.912);
+    transition: transform 0.3s ease;
+}
+
+.post-title-animated:hover {
+    transform: scale(1.05);
+    color: #2d84e1;
+}
+
+.speech-btn {
+    height: 51px;
+    font-size: 1.05rem;
+    border-radius: 10px;
+    margin-top: 27px;
+}
+
+
+
+/*css aff post */
+
+.row {
+    display: flex;
+    flex-wrap: wrap; /* Permet à l'élément de passer à la ligne suivante */
+    justify-content: space-between; /* Espace égal entre les cartes */
+  }
+
+  /* 2 cartes par ligne avec espacement entre elles */
+  .col-md-6 {
+    width: 48%; /* Deux cartes par ligne avec un petit espace entre elles */
+    margin-bottom: 20px; /* Ajout d'un petit espace sous chaque carte */
+  }
+
+  /* Limitation de la taille des cartes */
+  .card-post {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Ajuster les images pour qu'elles aient une hauteur fixe */
+  .card-img-top {
+    height: 200px; /* Hauteur fixe */
+    object-fit: cover; /* Permet à l'image de bien couvrir la zone sans déformation */
+  }
+
+  .card-body {
+    padding: 15px;
+  }
+
+  /* Limiter la hauteur du contenu texte */
+  .card-text {
+    max-height: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Espacement de la colonne */
+  .col-12, .col-md-6 {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  .breadcrumb-item a:hover {
+    text-decoration: underline;
+  }
+
+
+  /*moadal comment */
+
+  .modal-body::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .modal-body::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+  

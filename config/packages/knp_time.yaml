@@ -1,0 +1,5 @@
+knp_time:
+    # Format par défaut: "il y a %s", "dans %s"
+    format:     ~
+    # Texte pour "maintenant"
+    none:       'maintenant'

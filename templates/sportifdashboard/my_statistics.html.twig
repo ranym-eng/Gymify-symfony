@@ -1,0 +1,79 @@
+{% extends 'sportifdashboard/homepagesportif.html.twig' %}
+
+{% block title %}Mes Statistiques{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('build/statistics.4a096ed3.css') }}">
+{% endblock %}
+
+{% block javascripts_head %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid stats-container">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title">
+                <h4 class="text-center mb-4">Mes Statistiques</h4>
+                <p class="text-center text-muted">Analyse de vos blogs, commentaires et réactions</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="stats-card posts-chart">
+                <div class="stats-card-header">
+                    <h5 class="stats-card-title"><i class="fas fa-file-alt me-2"></i> Mes Posts</h5>
+                </div>
+                <div class="stats-card-body">
+                    {{ render_chart(postsChart) }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="stats-card comments-chart">
+                <div class="stats-card-header">
+                    <h5 class="stats-card-title"><i class="fas fa-comments me-2"></i> Commentaires sur mes posts</h5>
+                </div>
+                <div class="stats-card-body">
+                    {{ render_chart(commentsChart) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 offset-md-3 mb-4">
+            <div class="stats-card reactions-chart">
+                <div class="stats-card-header">
+                    <h5 class="stats-card-title"><i class="fas fa-heart me-2"></i> Réactions sur mes posts</h5>
+                </div>
+                <div class="stats-card-body">
+                    {{ render_chart(reactionsChart) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/charts-helper.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialisation discrète des graphiques sans modifier l'interface
+            if (window.chartsHelper) {
+                window.chartsHelper.reloadCharts();
+                
+                // Réessayer après un délai pour s'assurer que les graphiques sont chargés
+                setTimeout(function() {
+                    window.chartsHelper.reloadCharts();
+                }, 1000);
+            }
+        });
+    </script>
+{% endblock %} 

@@ -1,0 +1,29 @@
+<div class="language-selector dropdown">
+    <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        {% set currentLocale = app.request.locale %}
+        {% if currentLocale == 'fr' %}
+            <i class="flag-icon flag-icon-fr"></i> FR
+        {% elseif currentLocale == 'en' %}
+            <i class="flag-icon flag-icon-gb"></i> EN
+        {% elseif currentLocale == 'ar' %}
+            <i class="flag-icon flag-icon-sa"></i> AR
+        {% endif %}
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+            <a class="dropdown-item {% if app.request.locale == 'fr' %}active{% endif %}" href="{{ path('app_change_language', {'locale': 'fr'}) }}">
+                <i class="flag-icon flag-icon-fr"></i> Français
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item {% if app.request.locale == 'en' %}active{% endif %}" href="{{ path('app_change_language', {'locale': 'en'}) }}">
+                <i class="flag-icon flag-icon-gb"></i> English
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item {% if app.request.locale == 'ar' %}active{% endif %}" href="{{ path('app_change_language', {'locale': 'ar'}) }}">
+                <i class="flag-icon flag-icon-sa"></i> العربية
+            </a>
+        </li>
+    </ul>
+</div> 

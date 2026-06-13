@@ -1,0 +1,10 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+app_equipe_edit:
+    path: /equipe/edit/{id}
+    controller: App\Controller\EquipeController::edit
+    requirements:
+        id: \d+

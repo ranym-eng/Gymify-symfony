@@ -1,0 +1,414 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Athlete Registration{% endblock %}
+
+{% block body %}
+    <div class="form-container">
+        <div class="logo-container">
+            <img src="{{ asset('img/logocopy.png') }}" alt="Logo Fitness Club">
+        </div>
+
+        <div class="welcome-text">
+            <p>Sign up to join our club and start your fitness journey.</p>
+        </div>
+
+        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': ''}}) }}
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label == 'success' ? 'success' : 'danger' }} alert-dismissible fade show">
+                        <i class="fas fa-{{ label == 'success' ? 'check-circle' : 'exclamation-circle' }} mr-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Last Name', 'data-validate': 'true'}}) }}
+                </div>
+                <div class="invalid-feedback mt-1"></div>
+                {{ form_errors(form.nom) }}
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    {{ form_widget(form.prenom, {'attr': {'class': 'form-control', 'placeholder': 'First Name', 'data-validate': 'true'}}) }}
+                </div>
+                <div class="invalid-feedback mt-1"></div>
+                {{ form_errors(form.prenom) }}
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                    {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'Email Address', 'data-validate': 'true'}}) }}
+                </div>
+                <div class="invalid-feedback mt-1"></div>
+                {{ form_errors(form.email) }}
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    {{ form_widget(form.password.first, {'attr': {'class': 'form-control', 'placeholder': 'Password', 'data-validate': 'true'}}) }}
+                </div>
+                <div class="invalid-feedback mt-1"></div>
+                {{ form_errors(form.password.first) }}
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    {{ form_widget(form.password.second, {'attr': {'class': 'form-control', 'placeholder': 'Confirm Password', 'data-validate': 'true'}}) }}
+                </div>
+                <div class="invalid-feedback mt-1"></div>
+                {{ form_errors(form.password.second) }}
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                    {{ form_widget(form.dateNaissance, {'attr': {'class': 'form-control', 'placeholder': 'Date of Birth', 'data-validate': 'true'}}) }}
+                </div>
+                <div class="invalid-feedback mt-1"></div>
+                {{ form_errors(form.dateNaissance) }}
+            </div>
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus mr-2"></i>Sign Up
+                </button>
+            </div>
+
+            <div class="divider">
+                <span>Already a member?</span>
+            </div>
+
+            <div class="d-grid">
+                <a href="{{ path('app_login') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Log In
+                </a>
+            </div>
+
+            <div class="footer-text">
+                By continuing, you agree to our <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>.
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+
+    <style>
+        :root {
+            --primary-color: #ff7f00;
+            --primary-hover: #e76f00;
+            --secondary-color: #6c757d;
+            --light-gray: #f8f9fa;
+            --text-color: #333;
+            --border-radius: 10px;
+        }
+        
+        body {
+            background-image: url('{{ asset('img/sallegymback.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            backdrop-filter: blur(6px);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-container img {
+            max-width: 180px;
+            margin-bottom: 1.8rem;
+            transition: transform 0.4s;
+        }
+
+        .logo-container img:hover {
+            transform: scale(1.03);
+        }
+
+        .welcome-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .form-control {
+            border-radius: var(--border-radius);
+            border: 1px solid #e0e0e0;
+            padding: 12px 15px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            height: 48px;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(255, 127, 0, 0.15);
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            background-image: none;
+        }
+
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.875rem;
+            display: block;
+            text-align: left;
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            color: #777;
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+        }
+
+        .btn {
+            border-radius: var(--border-radius);
+            padding: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 111, 0, 0.25);
+        }
+
+        .btn-outline-secondary {
+            border: 1px solid #ddd;
+            color: var(--text-color);
+            background-color: white;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+            border-color: #ccc;
+        }
+
+        .alert {
+            border-radius: var(--border-radius);
+            padding: 12px 15px;
+            font-size: 0.9rem;
+        }
+
+        .divider {
+            position: relative;
+            margin: 1.8rem 0;
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #eee;
+            z-index: 1;
+        }
+
+        .divider span {
+            position: relative;
+            z-index: 2;
+            background-color: white;
+            padding: 0 12px;
+        }
+
+        .footer-text {
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .footer-text a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 576px) {
+            .form-container {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            .logo-container img {
+                max-width: 150px;
+            }
+            .welcome-text {
+                font-size: 1rem;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('.needs-validation');
+            const inputs = form.querySelectorAll('[data-validate="true"]');
+
+            // Validation function
+            const validateField = async (input) => {
+                const errorElement = input.closest('.mb-3').querySelector('.invalid-feedback');
+                const name = input.id.replace('sportif_', '').replace('_first', '').replace('_second', '');
+                errorElement.textContent = '';
+
+                if (name === 'nom' || name === 'prenom') {
+                    if (!input.value.trim()) {
+                        input.classList.add('is-invalid');
+                        errorElement.textContent = `${name === 'nom' ? 'Last Name' : 'First Name'} is required.`;
+                    } else if (input.value.length > 50) {
+                        input.classList.add('is-invalid');
+                        errorElement.textContent = `${name === 'nom' ? 'Last Name' : 'First Name'} cannot exceed 50 characters.`;
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                } else if (name === 'email') {
+                    const email = input.value.trim();
+                    if (!email) {
+                        input.classList.add('is-invalid');
+                        errorElement.textContent = 'Email is required.';
+                    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                        input.classList.add('is-invalid');
+                        errorElement.textContent = 'Please enter a valid email address.';
+                    } else {
+                        try {
+                            const response = await fetch('{{ path('api_check_email') }}', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: `email=${encodeURIComponent(email)}`
+                            });
+                            const data = await response.json();
+                            if (data.exists) {
+                                input.classList.add('is-invalid');
+                                errorElement.textContent = 'This email is already in use.';
+                            } else {
+                                input.classList.remove('is-invalid');
+                            }
+                        } catch (e) {
+                            input.classList.add('is-invalid');
+                            errorElement.textContent = 'Error verifying email.';
+                        }
+                    }
+                } else if (name === 'password') {
+                    const password1 = document.querySelector('#sportif_password_first').value;
+                    const password2 = document.querySelector('#sportif_password_second').value;
+                    if (!input.value) {
+                        input.classList.add('is-invalid');
+                        errorElement.textContent = input.id.includes('second') ? 
+                            'Password confirmation is required.' : 
+                            'Password is required.';
+                    } else if (input.value.length < 8) {
+                        input.classList.add('is-invalid');
+                        errorElement.textContent = 'Password must be at least 8 characters long.';
+                    } else if (input.id.includes('second') && password1 !== password2) {
+                        input.classList.add('is-invalid');
+                        errorElement.textContent = 'Passwords do not match.';
+                    } else if (input.id.includes('first') && password2 && password1 !== password2) {
+                        const secondInput = document.querySelector('#sportif_password_second');
+                        secondInput.classList.add('is-invalid');
+                        secondInput.closest('.mb-3').querySelector('.invalid-feedback').textContent = 
+                            'Passwords do not match.';
+                        input.classList.remove('is-invalid');
+                    } else {
+                        input.classList.remove('is-invalid');
+                        if (input.id.includes('first') && password2) {
+                            document.querySelector('#sportif_password_second').classList.remove('is-invalid');
+                            document.querySelector('#sportif_password_second')
+                                .closest('.mb-3').querySelector('.invalid-feedback').textContent = '';
+                        }
+                    }
+                } else if (name === 'dateNaissance') {
+                    if (!input.value) {
+                        input.classList.add('is-invalid');
+                        errorElement.textContent = 'Date of Birth is required.';
+                    } else {
+                        const birthDate = new Date(input.value);
+                        const today = new Date();
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const monthDiff = today.getMonth() - birthDate.getMonth();
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                            age--;
+                        }
+                        if (age < 12) {
+                            input.classList.add('is-invalid');
+                            errorElement.textContent = 'You must be at least 12 years old.';
+                        } else {
+                            input.classList.remove('is-invalid');
+                        }
+                    }
+                }
+            };
+
+            // Validate on blur and input
+            inputs.forEach(input => {
+                input.addEventListener('blur', () => validateField(input));
+                input.addEventListener('input', () => validateField(input));
+            });
+
+            // Form submission
+            form.addEventListener('submit', async (e) => {
+                let hasErrors = false;
+                for (const input of inputs) {
+                    await validateField(input);
+                    if (input.classList.contains('is-invalid')) {
+                        hasErrors = true;
+                    }
+                }
+                if (hasErrors) {
+                    e.preventDefault();
+                    const firstError = form.querySelector('.is-invalid');
+                    if (firstError) {
+                        firstError.focus();
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

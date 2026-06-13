@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Abonnements - {{ salle.nom }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; }
+        h1 { color: #3f51b5; font-size: 18px; margin-bottom: 5px; }
+        h2 { color: #666; font-size: 14px; margin-top: 0; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background-color: #3f51b5; color: white; padding: 8px; text-align: left; }
+        td { padding: 6px; border-bottom: 1px solid #ddd; }
+        .text-right { text-align: right; }
+        .filters { margin-bottom: 15px; padding: 10px; background-color: #f5f5f5; border-radius: 4px; }
+        .footer { margin-top: 20px; font-size: 10px; color: #999; text-align: center; }
+        .badge { 
+            padding: 3px 6px; 
+            border-radius: 3px; 
+            font-size: 11px; 
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .badge-type { background-color: #e3f2fd; color: #1976d2; }
+        .badge-activity { background-color: #e1f5fe; color: #0288d1; }
+    </style>
+</head>
+<body>
+    <h1>Liste des Abonnements</h1>
+    <h2>{{ salle.nom }}</h2>
+    
+    <div class="metadata">
+        <p>Exporté le : {{ export_date|date('d/m/Y à H:i') }}</p>
+        {% if filters.type or filters.activity %}
+        <div class="filters">
+            <strong>Filtres appliqués :</strong>
+            {% if filters.type %}
+                <span class="badge badge-type">
+                    {{ filters.type == 'mois' ? 'Monthly' : filters.type == 'trimestre' ? 'Quarterly' : filters.type == 'année' ? 'Annual' : filters.type }}
+                </span>
+            {% endif %}
+            {% if filters.activity %}<span class="badge badge-activity">{{ filters.activity }}</span>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Prix</th>
+                <th>Activité</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for abonnement in abonnements %}
+            <tr>
+                <td>{{ abonnement.type.getLabel() }}</td>
+                <td>{{ abonnement.tarif }} DT</td>
+                <td>{{ abonnement.activite.nom }}</td>
+
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 20px;">Aucun abonnement trouvé</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        Généré par {{ user.prenom }} {{ user.nom }} - {{ salle.nom }}
+    </div>
+</body>
+</html>

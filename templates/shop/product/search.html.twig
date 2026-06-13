@@ -1,0 +1,51 @@
+{% extends 'shop/base.html.twig' %}
+
+{% block title %}Recherche de produits{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Résultats de recherche</h1>
+        
+        {% if query %}
+            <p class="lead">Recherche pour "{{ query }}"</p>
+        {% endif %}
+
+        {% if products|length > 0 %}
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for product in products %}
+                    <div class="col">
+                        <div class="card h-100">
+                            {% if product.imagePath %}
+                                <img src="{{ asset('uploads/products/' ~ product.imagePath) }}" 
+                                     class="card-img-top" 
+                                     alt="{{ product.nomP }}"
+                                     style="height: 200px; object-fit: cover;">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.nomP }}</h5>
+                                <p class="card-text">
+                                    <strong>Prix:</strong> {{ product.prixP }} €<br>
+                                    <strong>Catégorie:</strong> {{ product.categorieP }}
+                                </p>
+                                <form action="{{ path('shop_cart_add', {'id': product.idP}) }}" method="POST" class="d-flex align-items-center">
+                                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stockP }}" class="form-control me-2" style="width: 80px;">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-cart-plus"></i> Ajouter
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                {% if query %}
+                    Aucun produit trouvé pour "{{ query }}".
+                {% else %}
+                    Veuillez entrer un terme de recherche.
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %} 

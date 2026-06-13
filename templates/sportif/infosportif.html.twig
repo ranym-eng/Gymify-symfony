@@ -1,0 +1,223 @@
+{% extends 'sportif/base.html.twig' %}
+
+{% block title %}Informations Sportives{% endblock %}
+
+{% block body %}
+<section class="choseus-section spad">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="section-title">
+                    <span>Votre profil sportif</span>
+                    <h2>INFORMATIONS SPORTIVES</h2>
+                </div>
+                
+                <div class="card form-card shadow-sm border-0">
+                    <div class="card-body p-4 p-md-5">
+                        {% for flash in app.flashes('success') %}
+                            <div class="alert alert-success">{{ flash }}</div>
+                        {% endfor %}
+                        {% for flash in app.flashes('error') %}
+                            <div class="alert alert-danger">{{ flash }}</div>
+                        {% endfor %}
+                        
+                        <form method="post" action="{{ path('app_infosportif_edit') }}" class="needs-validation" novalidate>
+                            <div class="row g-4 mb-4">
+                                <!-- Poids -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="poids" name="poids" placeholder=" " value="{{ infosportif.poids|default('') }}" required>
+                                        <label for="poids" class="form-label">Poids (kg)</label>
+                                        <div class="invalid-feedback">
+                                            Veuillez entrer un poids valide.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Taille -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="taille" name="taille" placeholder=" " value="{{ infosportif.taille|default('') }}" required>
+                                        <label for="taille" class="form-label">Taille (cm)</label>
+                                        <div class="invalid-feedback">
+                                            Veuillez entrer une taille valide.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Âge -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="age" name="age" placeholder=" " value="{{ infosportif.age|default('') }}" required>
+                                        <label for="age" class="form-label">Âge</label>
+                                        <div class="invalid-feedback">
+                                            Veuillez entrer un âge valide.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Sexe (Radio Buttons) -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="d-block mb-3">Sexe</label>
+                                        <div class="btn-group w-100" role="group">
+                                            <input type="radio" class="btn-check" name="sexe" id="homme" value="Homme" {{ infosportif.sexe == 'Homme' ? 'checked' : '' }} required>
+                                            <label class="btn btn-outline-primary" for="homme">Homme</label>
+                                            
+                                            <input type="radio" class="btn-check" name="sexe" id="femme" value="Femme" {{ infosportif.sexe == 'Femme' ? 'checked' : '' }}>
+                                            <label class="btn btn-outline-primary" for="femme">Femme</label>
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            Veuillez sélectionner un sexe.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Objectifs (Widgets) -->
+                            <div class="mb-4">
+                                <label class="d-block mb-3">Objectif</label>
+                                <div class="row g-3">
+                                    {% for objectif in enum('App\\Enum\\ObjectifCours').cases() %}
+                                    <div class="col-md-6 col-lg-3">
+                                        <input type="radio" class="d-none" name="objectif" id="{{ objectif.value }}" value="{{ objectif.value }}" {{ infosportif.objectif == objectif.value ? 'checked' : '' }} required>
+                                        <label class="objective-widget" for="{{ objectif.value }}">
+                                            <div class="objective-icon">
+                                                <i class="{{ objectif.iconClass }}"></i>
+                                            </div>
+                                            <h5>{{ objectif.label() }}</h5>
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="invalid-feedback">
+                                    Veuillez sélectionner un objectif.
+                                </div>
+                            </div>
+                            
+                            <!-- Bouton de soumission -->
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn primary-btn rounded-pill py-3">
+                                    <i class="fas fa-check-circle me-2"></i> Enregistrer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    /* Style général harmonisé avec l'index */
+    .form-card {
+        border-radius: 15px;
+        background: #fff;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .form-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-control, .form-select {
+        border-radius: 10px;
+        padding: 1rem;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #f36100;
+        box-shadow: 0 0 0 0.25rem rgba(243, 97, 0, 0.25);
+    }
+    
+    /* Style pour les boutons radio du sexe */
+    .btn-group .btn {
+        border-radius: 10px !important;
+        padding: 0.5rem 1rem;
+    }
+    
+    .btn-check:checked + .btn-outline-primary {
+        background-color: #f36100;
+        border-color: #f36100;
+        color: white;
+    }
+    
+    /* Style pour les widgets d'objectifs */
+    .objective-widget {
+        display: block;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        background: #f8f9fa;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .objective-widget:hover {
+        background: #e9ecef;
+    }
+    
+    .objective-widget h5 {
+        font-family: 'Oswald', sans-serif;
+        font-size: 16px;
+        margin-top: 10px;
+        color: #111;
+    }
+    
+    .objective-icon {
+        font-size: 2rem;
+        color: #f36100;
+    }
+    
+    input[type="radio"]:checked + .objective-widget {
+        background: rgba(243, 97, 0, 0.1);
+        border: 2px solid #f36100;
+    }
+    
+    /* Bouton primaire */
+    .primary-btn {
+        background: #f36100;
+        color: white;
+        border: none;
+        font-family: 'Oswald', sans-serif;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: background 0.3s ease;
+    }
+    
+    .primary-btn:hover {
+        background: #e04e00;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Validation côté client
+(function () {
+    'use strict';
+    var forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+</script>
+{% endblock %}

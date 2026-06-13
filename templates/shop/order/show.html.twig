@@ -1,0 +1,82 @@
+{% extends 'shop/base.html.twig' %}
+
+{% block title %}Commande #{{ commande.idC }}{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Détails de la commande #{{ commande.idC }}</h5>
+                <div class="btn-group">
+                    <a href="{{ path('shop_orders_index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Retour
+                    </a>
+                    {% if commande.statutC == 'En cours' %}
+                        <form action="{{ path('shop_order_cancel', {'id': commande.idC}) }}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette commande ?');">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-x-circle"></i> Annuler la commande
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong>Date :</strong> {{ commande.dateC|date('d/m/Y H:i') }}</p>
+                        <p><strong>Total :</strong> {{ commande.totalC }} €</p>
+                        <p>
+                            <strong>Statut :</strong>
+                            <span class="badge {% if commande.statutC == 'Annulée' %}bg-danger{% elseif commande.statutC == 'Validée' %}bg-success{% else %}bg-warning{% endif %}">
+                                {{ commande.statutC }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <h5 class="mb-3">Produits commandés</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Produit</th>
+                                <th>Prix unitaire</th>
+                                <th>Quantité</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ligne in commande.ligneCommandes %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if ligne.produit.imagePath %}
+                                                <img src="{{ asset('uploads/products/' ~ ligne.produit.imagePath) }}" 
+                                                     alt="{{ ligne.produit.nomP }}" 
+                                                     class="img-thumbnail me-3" 
+                                                     style="max-width: 50px;">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ ligne.produit.nomP }}</h6>
+                                                <small class="text-muted">{{ ligne.produit.categorieP }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ ligne.prix }} €</td>
+                                    <td>{{ ligne.quantite }}</td>
+                                    <td>{{ ligne.prix * ligne.quantite }} €</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Total</strong></td>
+                                <td><strong>{{ commande.totalC }} €</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

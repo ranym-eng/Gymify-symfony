@@ -1,0 +1,73 @@
+<footer class="footer">
+    <div class="container-fluid d-flex justify-content-between">
+        <nav class="pull-left">
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_about') }}">
+                        À propos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_help') }}">
+                        Aide
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_terms') }}">
+                        Conditions d'utilisation
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            &copy; {{ "now"|date("Y") }}, fait avec <i class="fa fa-heart heart text-danger"></i> par
+            <a href="{{ path('app_home') }}">Votre Société</a>
+        </div>
+        <div>
+            Template par <a href="https://themewagon.com/" target="_blank">ThemeWagon</a>
+        </div>
+    </div>
+</footer>
+
+<!-- Custom template settings panel - Optionnel -->
+<div class="custom-template">
+    <div class="title">Paramètres</div>
+    <div class="custom-content">
+        <div class="switcher">
+            <div class="switch-block">
+                <h4>Couleur du logo</h4>
+                <div class="btnSwitch">
+                    <button type="button" class="selected changeLogoHeaderColor" data-color="dark"></button>
+                    <button type="button" class="changeLogoHeaderColor" data-color="blue"></button>
+                    <button type="button" class="changeLogoHeaderColor" data-color="purple"></button>
+                    <button type="button" class="changeLogoHeaderColor" data-color="light-blue"></button>
+                    <button type="button" class="changeLogoHeaderColor" data-color="green"></button>
+                    <button type="button" class="changeLogoHeaderColor" data-color="orange"></button>
+                    <button type="button" class="changeLogoHeaderColor" data-color="red"></button>
+                    <button type="button" class="changeLogoHeaderColor" data-color="white"></button>
+                </div>
+            </div>
+            <div class="switch-block">
+                <h4>Couleur de la navbar</h4>
+                <div class="btnSwitch">
+                    <button type="button" class="changeTopBarColor" data-color="dark"></button>
+                    <button type="button" class="changeTopBarColor" data-color="blue"></button>
+                    <button type="button" class="changeTopBarColor" data-color="purple"></button>
+                    <button type="button" class="changeTopBarColor" data-color="light-blue"></button>
+                    <button type="button" class="changeTopBarColor" data-color="green"></button>
+                    <button type="button" class="selected changeTopBarColor" data-color="white"></button>
+                </div>
+            </div>
+            <div class="switch-block">
+                <h4>Couleur de la sidebar</h4>
+                <div class="btnSwitch">
+                    <button type="button" class="changeSideBarColor" data-color="white"></button>
+                    <button type="button" class="selected changeSideBarColor" data-color="dark"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="custom-toggle">
+        <i class="fas fa-cog"></i>
+    </div>
+</div>

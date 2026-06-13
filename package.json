@@ -1,0 +1,39 @@
+{
+  "scripts": {
+    "dev": "encore dev",
+    "watch": "encore dev --watch",
+    "build": "encore production --progress"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.7.2",
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@hotwired/turbo": "^8.0.13",
+    "bootstrap": "^5.3.3",
+    "chart.js": "^4.4.8",
+    "datatables.net-bs5": "^2.2.2",
+    "jquery": "^3.7.1",
+    "jquery-sparkline": "^2.4.0",
+    "jsvectormap": "^1.6.0",
+    "sweetalert2": "^11.17.2",
+    "swiper": "^11.2.6",
+    "webfontloader": "^1.6.28"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "@symfony/stimulus-bundle": "^2.23.0",
+    "@symfony/webpack-encore": "^5.1.0",
+    "autoprefixer": "^10.4.21",
+    "babel-loader": "^10.0.0",
+    "path": "^0.12.7",
+    "postcss": "^8.5.3",
+    "postcss-loader": "^8.1.1",
+    "sass": "^1.86.0",
+    "sass-loader": "^16.0.5",
+    "stimulus": "^3.2.2",
+    "webpack": "^5.98.0",
+    "@hotwired/turbo": "^7.0.0"
+  }
+}

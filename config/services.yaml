@@ -1,0 +1,121 @@
+# config/services.yaml
+parameters:
+    activities_image_directory: '%kernel.project_dir%/public/uploads/activities'
+    uploads_directory: '%kernel.project_dir%/public/uploads/images/users'
+    # chemin public utilisable dans asset() pour afficher l'image
+    uploads_public_path: '/uploads'
+    images_directory: '%kernel.project_dir%/public/uploads/images'
+    users_images_directory: '%kernel.project_dir%/public/uploads/images/users'
+    events_images_directory: '%kernel.project_dir%/public/uploads/events'
+    teams_images_directory: '%kernel.project_dir%/public/uploads/teams'
+    deepinfra_api_key: '%env(DEEPINFRA_API_KEY)%'
+    stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
+    stripe_public_key: '%env(STRIPE_PUBLIC_KEY)%'
+    twilio.account_sid: '%env(string:TWILIO_ACCOUNT_SID)%'
+    twilio.auth_token: '%env(string:TWILIO_AUTH_TOKEN)%'
+    twilio.phone_number: '%env(string:TWILIO_PHONE_NUMBER)%'
+    RECAPTCHA_SITE_KEY: '%env(RECAPTCHA_SITE_KEY)%'
+    google_client_id: '%env(GOOGLE_CLIENT_ID)%'
+    google_client_secret: '%env(GOOGLE_CLIENT_SECRET)%'
+    google_redirect_uri: '%env(GOOGLE_REDIRECT_URI)%'
+    teams_images_base_url: '/uploads/teams/'
+    app.token_secret: '%env(TOKEN_SECRET)%'
+    router.request_context.host: '6933-197-15-91-100.ngrok-free.app'
+    router.request_context.scheme: 'https'
+    ibm_watson_api_key: '%env(IBM_WATSON_API_KEY)%'
+    ibm_watson_service_url: '%env(IBM_WATSON_SERVICE_URL)%'
+    
+    ably_api_key: '%env(ABLY_API_KEY)%'
+services:
+
+
+    # default configuration for services in *this* file
+
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            $twilioAccountSid: '%env(TWILIO_ACCOUNT_SID)%'
+            $twilioAuthToken: '%env(TWILIO_AUTH_TOKEN)%'
+            $twilioPhoneNumber: '%env(TWILIO_PHONE_NUMBER)%'
+
+    App\Controller\AdminReclamationController:
+        arguments:
+            $logger: '@monolog.logger'
+
+    App\Service\TranslationService:
+        arguments:
+            $logger: '@monolog.logger'
+
+    App\Service\EmailUniquenessValidator:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+
+    App\Security\ClientRegistry: ~
+
+    App\Service\EmailService:
+        arguments:
+            $mailer: '@mailer'
+            
+    App\Service\SpeechToTextService:
+        arguments:
+            $apiKey: '%ibm_watson_api_key%'
+            $serviceUrl: '%ibm_watson_service_url%'
+            
+    App\Service\PerspectiveApiService:
+        public: true
+        arguments:
+            $apiKey: '%env(PERSPECTIVE_API_KEY)%'
+        
+    App\Service\EmailJSService:
+        public: true
+        
+    App\Service\AblyService:
+        arguments:
+            $apiKey: '%ably_api_key%'
+            
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Tests/'
+
+    App\Service\StripeService:
+        arguments:
+            $stripeSecretKey: '%stripe_secret_key%'
+
+    
+
+    App\Service\TwilioService:
+        arguments:
+            $params: '@parameter_bag'
+
+    App\Service\WeatherService:
+        arguments:
+            
+            #$stripeSecretKey: '%stripe_secret_key%'
+            $httpClient: '@http_client'
+            $apiKey: '%env(WEATHER_API_KEY)%'        
+    
+
+    # Add any other service definitions below
+
+
+    # Controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    
+
+  
+
+    # Add any other service definitions below
+
+    # Controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    
+        
+
+    # Add any other service definitions below

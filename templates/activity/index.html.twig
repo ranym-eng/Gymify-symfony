@@ -1,0 +1,474 @@
+{% extends 'admin/homepageadmin.html.twig' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block body %}
+    <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+        <div>
+            <h3 class="fw-bold mb-3">{{ page_title }}</h3>
+            <h6 class="op-7 mb-2">Activity Monitoring Dashboard</h6>
+        </div>
+        <div class="ms-md-auto py-2 py-md-0 d-flex gap-2">
+            <button class="btn btn-outline-primary btn-round" id="filterButton">
+                <i class="fas fa-filter me-2"></i> Filter
+                <span class="badge bg-primary" id="filterBadge" style="display: none;"></span>
+            </button>
+            <a href="{{ path('app_activity_new') }}" class="btn btn-primary btn-round">
+                <i class="fas fa-plus me-2"></i> Add Activity
+            </a>
+        </div>
+    </div>
+
+    {# Flash messages #}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    {# Stats Widgets #}
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card card-round shadow-sm bg-gradient-primary">
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-shape icon-lg bg-white rounded-3 text-primary me-3">
+                            <i class="fas fa-dumbbell fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-white mb-0">Total Activities</h6>
+                            <h3 class="text-white mb-0" id="totalActivitiesCount">{{ activities|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card card-round shadow-sm bg-gradient-success">
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-shape icon-lg bg-white rounded-3 text-success me-3">
+                            <i class="fas fa-user-tie fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-white mb-0">Personal Trainings</h6>
+                            <h3 class="text-white mb-0" id="personalTrainingsCount">{{ activities|filter(a => a.type.value == 'PERSONAL_TRAINING')|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card card-round shadow-sm bg-gradient-info">
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-shape icon-lg bg-white rounded-3 text-info me-3">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-white mb-0">Group Activities</h6>
+                            <h3 class="text-white mb-0" id="groupActivitiesCount">{{ activities|filter(a => a.type.value == 'GROUP_ACTIVITY')|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card card-round shadow-sm bg-gradient-warning">
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-shape icon-lg bg-white rounded-3 text-warning me-3">
+                            <i class="fas fa-heartbeat fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-white mb-0">Fitness Consultations</h6>
+                            <h3 class="text-white mb-0" id="consultationsCount">{{ activities|filter(a => a.type.value == 'FITNESS_CONSULTATION')|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Activities Table #}
+    <div class="card card-round shadow-lg">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activitiesTableBody">
+                        {% for activity in activities %}
+                        <tr data-activity-type="{{ activity.type.value }}" 
+                            data-searchable="{{ activity.nom|lower }} {{ activity.description|lower }} {{ activity.type.label()|lower }}">
+                            <td>
+                                {% if activity.url %}
+                                <img src="{{ asset(activity.url) }}" 
+                                     alt="{{ activity.nom }}" 
+                                     class="rounded-3" 
+                                     style="width: 80px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" 
+                                     style="width: 80px; height: 60px;">
+                                    <i class="fas fa-image text-muted"></i>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td class="searchable-name">{{ activity.nom }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if activity.type.value == 'PERSONAL_TRAINING' %}bg-primary
+                                    {% elseif activity.type.value == 'GROUP_ACTIVITY' %}bg-success
+                                    {% elseif activity.type.value == 'FITNESS_CONSULTATION' %}bg-warning
+                                    {% else %}bg-info{% endif %}">
+                                    {{ activity.type.label() }}
+                                </span>
+                            </td>
+                            <td class="searchable-description">{{ activity.description|slice(0, 50) ~ (activity.description|length > 50 ? '...' : '') }}</td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ path('app_activity_edit', {'id': activity.id}) }}" 
+                                       class="btn btn-sm btn-outline-primary rounded-pill"
+                                       data-bs-toggle="tooltip" 
+                                       data-bs-title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger rounded-pill delete-activity-btn"
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-title="Delete"
+                                            data-activity-id="{{ activity.id }}"
+                                            data-csrf-token="{{ csrf_token('delete' ~ activity.id) }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="fas fa-info-circle me-2"></i> No activities found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {# Filter Modal #}
+    <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="filterModalLabel">Filter Activities</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Activity Types</label>
+                        <div class="form-check">
+                            <input class="form-check-input filter-checkbox" type="checkbox" value="PERSONAL_TRAINING" id="filterPersonal" checked>
+                            <label class="form-check-label" for="filterPersonal">
+                                Personal Training
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input filter-checkbox" type="checkbox" value="GROUP_ACTIVITY" id="filterGroup" checked>
+                            <label class="form-check-label" for="filterGroup">
+                                Group Activity
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input filter-checkbox" type="checkbox" value="FITNESS_CONSULTATION" id="filterConsultation" checked>
+                            <label class="form-check-label" for="filterConsultation">
+                                Fitness Consultation
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" id="resetFilters">Reset</button>
+                    <button type="button" class="btn btn-primary" id="applyFilters">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Confirmation Modal #}
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this activity? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="POST" action="">
+                        <input type="hidden" name="_token" value="">
+                        <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .icon-shape {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+        }
+        .bg-gradient-success {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+        }
+        .bg-gradient-info {
+            background: linear-gradient(135deg, #396afc, #2948ff);
+        }
+        .bg-gradient-warning {
+            background: linear-gradient(135deg, #f46b45, #eea849);
+        }
+        .table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+        .card-round {
+            border-radius: 1rem;
+        }
+        .modal-content {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .modal-header {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .modal-footer {
+            border-top: none;
+        }
+        .filter-checkbox {
+            margin-right: 10px;
+        }
+        .form-check-label {
+            user-select: none;
+        }
+        .search-highlight {
+            background-color: #fff3cd;
+            font-weight: bold;
+        }
+        .no-results-row td {
+            padding: 2rem !important;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enable tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Delete confirmation modal handling
+            const deleteConfirmationModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+            const deleteForm = document.getElementById('deleteForm');
+            
+            document.querySelectorAll('.delete-activity-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const activityId = this.getAttribute('data-activity-id');
+                    const csrfToken = this.getAttribute('data-csrf-token');
+                    
+                    deleteForm.action = `/admin/activity/${activityId}/delete`;
+                    deleteForm.querySelector('input[name="_token"]').value = csrfToken;
+                    deleteConfirmationModal.show();
+                });
+            });
+
+            // Filter functionality
+            const filterModal = new bootstrap.Modal(document.getElementById('filterModal'));
+            const filterButton = document.getElementById('filterButton');
+            const applyFiltersBtn = document.getElementById('applyFilters');
+            const resetFiltersBtn = document.getElementById('resetFilters');
+            const checkboxes = document.querySelectorAll('.filter-checkbox');
+            const filterBadge = document.getElementById('filterBadge');
+            const globalSearchInput = document.getElementById('globalSearchInput');
+            
+            // Show modal when filter button clicked
+            filterButton.addEventListener('click', () => filterModal.show());
+            
+            // Apply filters
+            applyFiltersBtn.addEventListener('click', function() {
+                const selectedTypes = getSelectedTypes();
+                updateFilteredActivities(selectedTypes);
+                updateFilterBadge(selectedTypes);
+                filterModal.hide();
+            });
+            
+            // Reset filters
+            resetFiltersBtn.addEventListener('click', function() {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                });
+                applyFiltersBtn.click();
+            });
+
+            // Handle search input from navbar
+            if (globalSearchInput) {
+                let searchTimeout;
+                globalSearchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        const selectedTypes = getSelectedTypes();
+                        updateFilteredActivities(selectedTypes);
+                    }, 300);
+                });
+            }
+            
+            // Get selected filter types
+            function getSelectedTypes() {
+                const selected = [];
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        selected.push(checkbox.value);
+                    }
+                });
+                return selected;
+            }
+            
+            // Update activities based on filters and search
+            function updateFilteredActivities(selectedTypes) {
+                const searchTerm = globalSearchInput ? globalSearchInput.value.toLowerCase() : '';
+                let visibleCount = 0;
+                let personalCount = 0;
+                let groupCount = 0;
+                let consultationCount = 0;
+
+                document.querySelectorAll('#activitiesTableBody tr[data-activity-type]').forEach(row => {
+                    const activityType = row.getAttribute('data-activity-type');
+                    const matchesType = selectedTypes.includes(activityType);
+                    const matchesSearch = searchTerm === '' || 
+                      row.getAttribute('data-searchable').includes(searchTerm);
+
+                    if (matchesType && matchesSearch) {
+                        row.style.display = '';
+                        visibleCount++;
+                        
+                        // Update counts for stats
+                        if (activityType === 'PERSONAL_TRAINING') personalCount++;
+                        if (activityType === 'GROUP_ACTIVITY') groupCount++;
+                        if (activityType === 'FITNESS_CONSULTATION') consultationCount++;
+                        
+                        // Highlight search terms
+                        highlightSearchTerms(row, searchTerm);
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Update stats widgets
+                document.getElementById('totalActivitiesCount').textContent = visibleCount;
+                document.getElementById('personalTrainingsCount').textContent = personalCount;
+                document.getElementById('groupActivitiesCount').textContent = groupCount;
+                document.getElementById('consultationsCount').textContent = consultationCount;
+
+                // Show/hide "no results" message
+                updateNoResultsMessage(visibleCount);
+            }
+            
+            // Highlight search terms in visible rows
+            function highlightSearchTerms(row, term) {
+                if (term === '') {
+                    // Reset highlights if no search term
+                    const nameCell = row.querySelector('.searchable-name');
+                    const descCell = row.querySelector('.searchable-description');
+                    if (nameCell) nameCell.innerHTML = nameCell.textContent;
+                    if (descCell) descCell.innerHTML = descCell.textContent;
+                    return;
+                }
+
+                const regex = new RegExp(term, 'gi');
+                
+                // Highlight in name
+                const nameCell = row.querySelector('.searchable-name');
+                if (nameCell) {
+                    nameCell.innerHTML = nameCell.textContent.replace(
+                        regex, 
+                        match => `<span class="search-highlight">${match}</span>`
+                    );
+                }
+                
+                // Highlight in description
+                const descCell = row.querySelector('.searchable-description');
+                if (descCell) {
+                    descCell.innerHTML = descCell.textContent.replace(
+                        regex, 
+                        match => `<span class="search-highlight">${match}</span>`
+                    );
+                }
+            }
+            
+            // Show no results message if needed
+            function updateNoResultsMessage(visibleCount) {
+                const noResultsRow = document.querySelector('#activitiesTableBody .no-results-row');
+                const hasActivities = document.querySelectorAll('#activitiesTableBody tr[data-activity-type]').length > 0;
+
+                if (visibleCount === 0 && hasActivities) {
+                    if (!noResultsRow) {
+                        const tbody = document.getElementById('activitiesTableBody');
+                        const newRow = document.createElement('tr');
+                        newRow.className = 'no-results-row';
+                        newRow.innerHTML = `
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="fas fa-search me-2"></i> No activities match your search and filters
+                            </td>
+                        `;
+                        tbody.appendChild(newRow);
+                    }
+                } else if (noResultsRow) {
+                    noResultsRow.remove();
+                }
+            }
+            
+            // Update filter badge
+            function updateFilterBadge(selectedTypes) {
+                const totalTypes = checkboxes.length;
+                if (selectedTypes.length === totalTypes) {
+                    filterBadge.style.display = 'none';
+                } else {
+                    filterBadge.textContent = totalTypes - selectedTypes.length;
+                    filterBadge.style.display = 'flex';
+                }
+            }
+            
+            // Initialize with all types selected
+            applyFiltersBtn.click();
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ page_title }}</title>
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+        <link rel="stylesheet" href="/css/fonts.min.css">
+        <link rel="stylesheet" href="/css/kaiadmin.min.css">
+        <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+        <style>
+            .form-control:focus {
+                box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+            }
+            .image-preview-container {
+                min-height: 200px;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .image-preview {
+                max-height: 200px;
+                object-fit: contain;
+                border-radius: 8px;
+            }
+            .is-invalid {
+                border: 1px solid #dc3545 !important;
+            }
+            .invalid-feedback {
+                color: #dc3545;
+                font-size: 0.875em;
+                display: block;
+            }
+            .border-dashed {
+                border: 2px dashed #dee2e6;
+            }
+            .image-upload-container:hover .border-dashed {
+                border-color: #3a7bd5;
+            }
+            .border-danger {
+                border-color: #dc3545 !important;
+            }
+            .btn-outline-primary {
+                transition: all 0.3s ease;
+            }
+            .btn-outline-primary:hover {
+                background-color: #007bff;
+                color: white;
+            }
+            #submitBtn:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+            .input-group-text {
+                min-width: 45px;
+                justify-content: center;
+            }
+            .footer {
+                position: relative;
+                bottom: 0;
+                width: 100%;
+                font-size: 0.9rem;
+            }
+            .card {
+                border-radius: 15px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            .form-label {
+                font-weight: 600;
+                color: #495057;
+            }
+            .form-control, .form-select {
+                border-radius: 8px;
+                padding: 10px 15px;
+            }
+            .btn {
+                border-radius: 25px;
+                padding: 10px 20px;
+            }
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+        <script>
+            WebFont.load({
+                google: { families: ["Public Sans:300,400,500,600,700"] },
+                custom: { families: ["Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"], urls: ["/css/fonts.min.css"] },
+                active: function() { sessionStorage.fonts = true; }
+            });
+        </script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="sidebar" data-background-color="dark">
+                <div class="sidebar-logo">
+                    <div class="logo-header" data-background-color="dark">
+                        <a href="/responsable/home" class="logo">
+                            <img src="/img/kaiadmin/logo_light.svg" alt="Logo" class="navbar-brand" height="20">
+                        </a>
+                        <div class="nav-toggle">
+                            <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
+                            <button class="btn btn-toggle sidenav-toggler"><i class="gg-menu-left"></i></button>
+                        </div>
+                        <button class="topbar-toggler more"><i class="gg-more-vertical-alt"></i></button>
+                    </div>
+                </div>
+                <div class="sidebar-wrapper scrollbar scrollbar-inner">
+                    <div class="sidebar-content">
+                        <ul class="nav nav-secondary">
+                            <li class="nav-item"><a href="/responsable/dashboard"><i class="fas fa-home"></i><p>Dashboard</p></a></li>
+                            <li class="nav-item"><a href="/equipe"><i class="fas fa-users"></i><p>Teams</p></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="main-panel">
+                <div class="main-header">
+                    <!-- Header reste inchangé -->
+                </div>
+                <div class="container">
+                    <div class="page-inner">
+                        <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+                            <div>
+                                <h3 class="fw-bold mb-3">{{ page_title }}</h3>
+                                <h6 class="op-7 mb-2">Create a New Team</h6>
+                            </div>
+                        </div>
+
+                        {% for message in app.flashes('success') %}
+                            <div class="alert alert-success">{{ message }}</div>
+                        {% endfor %}
+                        {% for message in app.flashes('error') %}
+                            <div class="alert alert-danger">{{ message }}</div>
+                        {% endfor %}
+
+                        <div class="row justify-content-center">
+                            <div class="col-lg-10">
+                                <div class="card shadow-sm">
+                                    <div class="card-body p-4">
+                                        {{ form_start(form, {'method': 'POST', 'action': path('app_equipe_new'), 'attr': {'enctype': 'multipart/form-data', 'class': 'needs-validation', 'id': 'equipeForm', 'novalidate': 'novalidate'}}) }}
+                                            <div class="mb-3">
+                                                {{ form_label(form.nom, 'Team Name', {'label_attr': {'class': 'form-label fw-bold text-muted small'}}) }}
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-light"><i class="fas fa-heading text-primary"></i></span>
+                                                    {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Enter team name'}}) }}
+                                                </div>
+                                                {{ form_errors(form.nom, {'attr': {'class': 'invalid-feedback'}}) }}
+                                            </div>
+                                            <div class="mb-3 image-upload-container">
+                                                {{ form_label(form.imageFile, 'Team Image', {'label_attr': {'class': 'form-label fw-bold text-muted small'}}) }}
+                                                <div class="image-preview-container text-center mb-3 position-relative">
+                                                    <img id="imagePreview" src="" class="image-preview shadow-sm mx-auto d-block" style="display: none;">
+                                                    <div id="placeholderText" class="position-absolute top-50 start-50 translate-middle w-100 py-5 border-2 border-dashed rounded-3 bg-light" style="display: block;">
+                                                        <i class="fas fa-camera fa-3x text-muted mb-3 d-block"></i>
+                                                        <p class="text-muted mb-0">No image selected</p>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex gap-3">
+                                                    <div class="flex-grow-1">
+                                                        {{ form_widget(form.imageFile, {'attr': {'class': 'form-control d-none', 'accept': 'image/*'}}) }}
+                                                        <label for="{{ form.imageFile.vars.id }}" class="btn btn-outline-primary w-100 py-2"><i class="fas fa-camera me-2"></i>Choose Image</label>
+                                                    </div>
+                                                    <button type="button" id="removeImageBtn" class="btn btn-outline-danger py-2" style="display: none;"><i class="fas fa-trash-alt me-2"></i>Remove</button>
+                                                </div>
+                                                {{ form_errors(form.imageFile, {'attr': {'class': 'invalid-feedback'}}) }}
+                                                <small class="text-muted d-block mt-2">Recommended size: 1200x800px</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                {{ form_label(form.niveau, 'Level', {'label_attr': {'class': 'form-label fw-bold text-muted small'}}) }}
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-light"><i class="fas fa-list text-primary"></i></span>
+                                                    {{ form_widget(form.niveau, {'attr': {'class': 'form-control form-select'}}) }}
+                                                </div>
+                                                {{ form_errors(form.niveau, {'attr': {'class': 'invalid-feedback'}}) }}
+                                            </div>
+                                            <div class="mb-3">
+                                                {{ form_label(form.nombre_membres, 'Number of Members', {'label_attr': {'class': 'form-label fw-bold text-muted small'}}) }}
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-light"><i class="fas fa-users text-primary"></i></span>
+                                                    {{ form_widget(form.nombre_membres, {'attr': {'class': 'form-control', 'placeholder': 'Enter number of members'}}) }}
+                                                </div>
+                                                {{ form_errors(form.nombre_membres, {'attr': {'class': 'invalid-feedback'}}) }}
+                                            </div>
+                                            {{ form_row(form._token) }}
+                                            <div class="d-flex justify-content-end gap-3">
+                                                <button type="button" id="cancelBtn" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Cancel</button>
+                                                {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary', 'id': 'submitBtn'}}) }}
+                                            </div>
+                                        {{ form_end(form, {'render_rest': false}) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <footer class="footer py-3 bg-light border-top">
+                    <div class="container-fluid d-flex flex-column flex-md-row justify-content-between align-items-center">
+                        <nav class="mb-2 mb-md-0">
+                            <ul class="nav">
+                                <li class="nav-item"><a class="nav-link text-muted" href="/responsable/about">À propos</a></li>
+                                <li class="nav-item"><a class="nav-link text-muted" href="/responsable/help">Aide</a></li>
+                                <li class="nav-item"><a class="nav-link text-muted" href="/responsable/terms">Conditions d'utilisation</a></li>
+                            </ul>
+                        </nav>
+                        <div class="text-center text-muted mb-2 mb-md-0">
+                            © 2025, fait avec <i class="fa fa-heart heart text-danger"></i> par
+                            <a href="/responsable/home" class="text-muted text-decoration-none">Votre Société</a>
+                        </div>
+                        <div class="text-muted">
+                            Template par <a href="https://themewagon.com/" target="_blank" class="text-muted text-decoration-none">ThemeWagon</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <script src="/js/core/jquery-3.7.1.min.js"></script>
+        <script src="/js/core/popper.min.js"></script>
+        <script src="/js/core/bootstrap.min.js"></script>
+        <script src="/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+        <script src="/js/kaiadmin.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const imageInput = document.getElementById('{{ form.imageFile.vars.id }}');
+                const imagePreview = document.getElementById('imagePreview');
+                const placeholderText = document.getElementById('placeholderText');
+                const removeImageBtn = document.getElementById('removeImageBtn');
+                const cancelBtn = document.getElementById('cancelBtn');
+
+                imageInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            imagePreview.src = e.target.result;
+                            imagePreview.style.display = 'block';
+                            placeholderText.style.display = 'none';
+                            removeImageBtn.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                removeImageBtn.addEventListener('click', function() {
+                    imageInput.value = '';
+                    imagePreview.src = '';
+                    imagePreview.style.display = 'none';
+                    placeholderText.style.display = 'block';
+                    this.style.display = 'none';
+                });
+
+                cancelBtn.addEventListener('click', function() {
+                    window.location.href = '/equipe';
+                });
+            });
+        </script>
+    </body>
+</html>

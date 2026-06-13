@@ -1,0 +1,275 @@
+{% extends 'sportif/base.html.twig' %}
+
+{% block title %}Chat avec DeepInfra{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --primary:rgb(213, 112, 11);  /* Rouge énergique */
+            --secondary:rgb(199, 93, 18);  /* Turquoise rafraîchissant */
+            --dark:rgb(56, 58, 60);  /* Fond sombre élégant */
+            --light: #F7FFF7;  /* Fond clair */
+            --accent: #FFE66D;  /* Jaune pour les accents */
+        }
+        body {
+          background-color: #000; /* Noir */
+          color: #fff; /* Texte en blanc pour plus de contraste */
+        }
+        .page-spacer {
+          height: 70px;
+           width: 100%;
+           clear: both;
+          }
+
+        .chat-container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #000; /* Fond noir */
+            color: #fff; /* Texte en blanc pour plus de lisibilité */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Bordure légère */
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(41, 47, 54, 0.1);
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .message-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-right: 10px;
+        }
+
+        /* Scrollbar stylisée */
+        .message-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .message-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .message-container::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 10px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 12px 20px;
+            border-radius: 18px;
+            font-size: 16px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+            animation: fadeIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 2px 5px rgba(133, 123, 123, 0.05);
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, var(--primary), #FF8E8E);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-message {
+            background: white;
+            color: var(--dark);
+            align-self: flex-start;
+            border: 1px solid #eee;
+            border-bottom-left-radius: 4px;
+        }
+
+        .bot-message:before {
+            content: "";
+            position: absolute;
+            left: -8px;
+            top: 12px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid white;
+        }
+
+        .user-message:after {
+            content: "";
+            position: absolute;
+            right: -8px;
+            top: 12px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 8px solid var(--primary);
+        }
+
+        .error-message {
+            background-color: #FFF3F3;
+            color:rgb(218, 92, 8);
+            align-self: center;
+            text-align: center;
+            border: 1px solid #FFD6D6;
+            padding: 15px;
+            border-radius: 12px;
+            width: 90%;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-container {
+            display: flex;
+            background: white;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border: 1px solid #eee;
+        }
+
+        .form-control {
+            flex-grow: 1;
+            border-radius: 50px;
+            padding: 12px 20px;
+            border: none;
+            font-size: 16px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+        }
+
+        .btn-ai {
+            background: linear-gradient(135deg, var(--secondary),rgb(214, 81, 15));
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-ai:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-reset {
+            background: white;
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1px solid #FFD6D6;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-reset:hover {
+            background: #FFF3F3;
+            transform: translateY(-1px);
+        }
+
+        .header-chat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chat-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-title i {
+            color: var(--primary);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+            <div class="page-spacer"></div>
+
+
+    <div class="chat-container">
+        <div class="header-chat">
+            <h2 class="chat-title">
+                <i class="fas fa-dumbbell"></i> Gym Assistant
+            </h2>
+            <a href="{{ path('deepinfra_reset') }}" class="btn-reset">
+                <i class="fas fa-trash-alt"></i> Effacer
+            </a>
+        </div>
+        
+        <div class="message-container" id="messageContainer" role="log" aria-live="polite">
+            {% for message in messages %}
+                <div class="message {{ message.role == 'user' ? 'user-message' : 'bot-message' }}">
+                    {{ message.content|escape }}
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="message error-message">
+                    <i class="fas fa-exclamation-circle"></i> {{ message|escape }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="input-container">
+            {{ form_start(form, {'attr': {'class': 'd-flex w-100 align-items-center'}}) }}
+                {{ form_widget(form.input, {'attr': {
+                    'class': 'form-control',
+                    'placeholder': 'Posez votre question sur le fitness...',
+                    'aria-label': 'Message input'
+                }}) }}
+                <button type="submit" class="btn-ai">
+                    <i class="fas fa-paper-plane"></i> Envoyer
+                </button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function scrollToBottom() {
+            const messageContainer = document.getElementById("messageContainer");
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            scrollToBottom();
+            
+            // Focus automatique sur le champ de saisie
+            document.querySelector('input[name*="input"]')?.focus();
+        });
+
+        document.querySelector('form')?.addEventListener('submit', function() {
+            setTimeout(scrollToBottom, 100);
+        });
+    </script>
+{% endblock %}

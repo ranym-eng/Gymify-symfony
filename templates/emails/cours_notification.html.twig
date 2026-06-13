@@ -1,0 +1,6 @@
+{# templates/emails/cours_notification.html.twig #}
+<h1>Notification de cours {{ action }}</h1>
+<p>Le cours <strong>{{ cours.title }}</strong> a été {{ action }}.</p>
+<p>Date: {{ cours.dateDebut|date('d/m/Y') }}</p>
+<p>Heure: {{ cours.heurDebut|date('H:i') }} - {{ cours.heurFin|date('H:i') }}</p>
+<p>Salle: {{ cours.salle.nom }}</p>

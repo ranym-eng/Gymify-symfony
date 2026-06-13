@@ -1,0 +1,92 @@
+# واجهة عامة
+search:
+  placeholder: "بحث..."
+  label: "بحث"
+
+navbar:
+  greeting: "مرحبًا"
+  guest: "ضيف"
+  view_profile: "عرض الملف الشخصي"
+  my_profile: "ملفي الشخصي"
+  logout: "تسجيل الخروج"
+  login: "تسجيل الدخول"
+
+sidebar:
+  settings: "الإعدادات"
+  language: "اللغة"
+
+# وحدة المدونة
+blog:
+  title: "المدونات"
+  my_blogs: "مدوناتي"
+  all_blogs: "كل المدونات"
+  add_blog: "إضافة مدونة"
+  edit_blog: "تعديل المدونة"
+  delete_blog: "حذف المدونة"
+  no_blogs: "لم يتم العثور على مدونات"
+  created_at: "تم الإنشاء في"
+  updated_at: "تم التحديث في"
+  created_by: "تم الإنشاء بواسطة"
+  read_more: "قراءة المزيد"
+  back_to_list: "العودة إلى القائمة"
+  save: "حفظ"
+  cancel: "إلغاء"
+  confirm_delete: "هل أنت متأكد أنك تريد حذف هذه المدونة؟"
+  success:
+    created: "تم إنشاء المدونة بنجاح!"
+    updated: "تم تحديث المدونة بنجاح!"
+    deleted: "تم حذف المدونة بنجاح!"
+  error:
+    create: "خطأ في إنشاء المدونة."
+    update: "خطأ في تحديث المدونة."
+    delete: "خطأ في حذف المدونة."
+    image_both: "يرجى اختيار إما صورة محلية أو عنوان URL، وليس كليهما."
+    image_upload: "خطأ في تحميل الصورة."
+  form:
+    title: "العنوان"
+    content: "المحتوى"
+    image: "الصورة"
+    image_url: "رابط الصورة"
+    submit: "إرسال"
+    or_url: "أو أدخل رابط الصورة"
+  
+# التعليقات
+comment:
+  title: "التعليقات"
+  add: "إضافة تعليق"
+  edit: "تعديل التعليق"
+  delete: "حذف التعليق"
+  no_comments: "لا توجد تعليقات حتى الآن"
+  write: "اكتب تعليقًا..."
+  submit: "إرسال"
+  created_at: "تم التعليق في"
+  updated_at: "تم التعديل في"
+  confirm_delete: "هل أنت متأكد أنك تريد حذف هذا التعليق؟"
+  success:
+    created: "تمت إضافة التعليق بنجاح!"
+    updated: "تم تحديث التعليق بنجاح!"
+    deleted: "تم حذف التعليق بنجاح!"
+  error:
+    create: "خطأ في إضافة التعليق."
+    update: "خطأ في تحديث التعليق."
+    delete: "خطأ في حذف التعليق."
+    
+# التفاعلات
+reaction:
+  like: "إعجاب"
+  love: "أحببته"
+  haha: "هههه"
+  wow: "واو"
+  sad: "حزين"
+  angry: "غاضب"
+  
+# الإحصائيات
+stats:
+  title: "الإحصائيات"
+  my_stats: "إحصائياتي"
+  global_stats: "الإحصائيات العامة"
+  posts_per_day: "المنشورات في اليوم"
+  comments_per_day: "التعليقات في اليوم"
+  reactions_distribution: "توزيع التفاعلات"
+  most_active_users: "المستخدمون الأكثر نشاطًا"
+  most_popular_posts: "المنشورات الأكثر شعبية" 

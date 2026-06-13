@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de Participation | {{ equipe_event.event.nom }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .confirmation-container {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .confirmation-message {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .confirmation-message h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        .confirmation-message p {
+            font-size: 16px;
+            color: #555555;
+            line-height: 1.6;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .event-details, .team-details {
+            margin-bottom: 30px;
+        }
+
+        .event-details .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .event-image-wrapper {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+            height: 250px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .event-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .event-image-wrapper:hover img {
+            transform: scale(1.05);
+        }
+
+        .event-type-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #f36100;
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .event-date {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f36100;
+            color: #ffffff;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            width: 50px;
+        }
+
+        .event-date span {
+            font-size: 20px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .event-date p {
+            font-size: 10px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .event-content {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .event-content h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f36100;
+            padding-bottom: 8px;
+        }
+
+        .details-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            gap: 12px;
+        }
+
+        .details-list li {
+            font-size: 15px;
+            color: #555555;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .details-list li strong {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .details-list .icon {
+            color: #f36100;
+            font-size: 16px;
+        }
+
+        .details-list .reward-icon {
+            color: #FFD700;
+        }
+
+        .team-details h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f36100;
+            padding-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .confirmation-container {
+                padding: 20px;
+            }
+
+            .confirmation-message h2 {
+                font-size: 24px;
+            }
+
+            .confirmation-message p {
+                font-size: 14px;
+            }
+
+            .event-image-wrapper {
+                height: 200px;
+                min-width: 100%;
+            }
+
+            .event-content h3 {
+                font-size: 20px;
+            }
+
+            .details-list li {
+                font-size: 14px;
+            }
+
+            .team-details h2 {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .confirmation-message h2 {
+                font-size: 20px;
+            }
+
+            .event-image-wrapper {
+                height: 180px;
+            }
+
+            .event-content h3 {
+                font-size: 18px;
+            }
+
+            .details-list li {
+                font-size: 13px;
+            }
+
+            .team-details h2 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="confirmation-container">
+        {% if error is defined %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i> {{ error }}
+            </div>
+        {% else %}
+            <div class="confirmation-message">
+                <h2>Félicitations, {{ sportif.prenom }} !</h2>
+                <p>Vous êtes officiellement inscrit à l'événement <strong>{{ equipe_event.event.nom }}</strong> avec l'équipe <strong>{{ equipe_event.equipe.nom }}</strong>. Préparez-vous pour une expérience inoubliable !</p>
+            </div>
+
+            <!-- Event Details Section -->
+            <div class="event-details">
+                <div class="row">
+                    <div class="event-image-wrapper">
+                        {% if equipe_event.event.imageUrl %}
+                            <img src="{{ asset('Uploads/events/' ~ equipe_event.event.imageUrl|split('/')|last) }}" alt="{{ equipe_event.event.nom }}" onerror="this.src='{{ asset('img/event-default.jpg') }}'">
+                        {% else %}
+                            <img src="{{ asset('img/event-default.jpg') }}" alt="Image d'événement par défaut">
+                        {% endif %}
+                        <div class="event-type-badge">{{ equipe_event.event.type ? equipe_event.event.type.value|capitalize : 'Non défini' }}</div>
+                        <div class="event-date">
+                            <span>{{ equipe_event.event.date ? equipe_event.event.date|date('d') : 'N/A' }}</span>
+                            <p>{{ equipe_event.event.date ? equipe_event.event.date|date('M') : 'N/A' }}</p>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>{{ equipe_event.event.nom }}</h3>
+                        <ul class="details-list">
+                            <li><i class="fa fa-users icon"></i> <strong>Équipe :</strong> {{ equipe_event.equipe.nom }}</li>
+                            <li><i class="fa fa-info-circle icon"></i> <strong>Description :</strong> {{ equipe_event.event.description|default('Aucune description') }}</li>
+                            <li><i class="fa fa-clock icon"></i> <strong>Horaire :</strong> {{ equipe_event.event.heureDebut ? equipe_event.event.heureDebut|date('H:i') : 'N/A' }} - {{ equipe_event.event.heureFin ? equipe_event.event.heureFin|date('H:i') : 'N/A' }}</li>
+                            <li><i class="fas fa-trophy icon reward-icon"></i> <strong>Récompense :</strong> {{ equipe_event.event.reward.value|default('Aucune')|capitalize }}</li>
+                            <li><i class="fa fa-map-marker-alt icon"></i> <strong>Lieu :</strong> {{ equipe_event.event.lieu|default('Non spécifié') }}</li>
+                            <li><i class="fa fa-building icon"></i> <strong>Salle :</strong> {{ equipe_event.event.salle.nom }}</li>
+                            <li><i class="fa fa-user icon"></i> <strong>Participant :</strong> {{ sportif.prenom }} {{ sportif.nom }} ({{ sportif.email }})</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Details Section -->
+            <div class="team-details">
+                <h2>{{ equipe_event.equipe.nom }}</h2>
+                <ul class="details-list">
+                    <li><i class="fa fa-users icon"></i> <strong>Nombre de Membres :</strong> {{ equipe_event.equipe.nombreMembres }}/8</li>
+                    <li><i class="fa fa-info-circle icon"></i> <strong>Description :</strong> {{ equipe_event.equipe.description|default('Aucune description') }}</li>
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,291 @@
+{% extends 'shop/base.html.twig' %}
+
+{% block title %}Nos Produits{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Nos Produits</h1>
+
+        <div class="row">
+            <!-- Left Sidebar with Search and Filters -->
+            <div class="col-md-3">
+                <!-- Search -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Rechercher</h5>
+                        <form action="{{ path('shop_product_search') }}" method="GET">
+                            <div class="input-group">
+                                <input type="search" name="q" class="form-control" placeholder="Rechercher un produit..." value="{{ app.request.query.get('q') }}">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Catégories</h5>
+                        <form id="categoryFilterForm" method="GET">
+                            {% if app.request.query.get('q') %}
+                                <input type="hidden" name="q" value="{{ app.request.query.get('q') }}">
+                            {% endif %}
+                            {% if app.request.query.get('min_price') %}
+                                <input type="hidden" name="min_price" value="{{ app.request.query.get('min_price') }}">
+                            {% endif %}
+                            {% if app.request.query.get('max_price') %}
+                                <input type="hidden" name="max_price" value="{{ app.request.query.get('max_price') }}">
+                            {% endif %}
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="category" id="all" value="" 
+                                       {% if not app.request.query.get('category') %}checked{% endif %}>
+                                <label class="form-check-label" for="all">
+                                    Toutes les catégories
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="category" id="complement" value="complement"
+                                       {% if app.request.query.get('category') == 'complement' %}checked{% endif %}>
+                                <label class="form-check-label" for="complement">
+                                    Complément
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="category" id="accessoire" value="accessoire"
+                                       {% if app.request.query.get('category') == 'accessoire' %}checked{% endif %}>
+                                <label class="form-check-label" for="accessoire">
+                                    Accessoire
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-filter"></i> Filtrer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Price Filter -->
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Filtrer par prix</h5>
+                        <form id="priceFilterForm" method="GET">
+                            {% if app.request.query.get('q') %}
+                                <input type="hidden" name="q" value="{{ app.request.query.get('q') }}">
+                            {% endif %}
+                            {% if app.request.query.get('category') %}
+                                <input type="hidden" name="category" value="{{ app.request.query.get('category') }}">
+                            {% endif %}
+                            <div class="mb-3">
+                                <label class="form-label">Prix minimum</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">€</span>
+                                    <input type="number" name="min_price" class="form-control" value="{{ app.request.query.get('min_price') }}" min="0">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Prix maximum</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">€</span>
+                                    <input type="number" name="max_price" class="form-control" value="{{ app.request.query.get('max_price') }}" min="0">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel"></i> Filtrer
+                            </button>
+                            {% if app.request.query.get('min_price') or app.request.query.get('max_price') or app.request.query.get('q') or app.request.query.get('category') %}
+                                <a href="{{ path('shop_product_index') }}" class="btn btn-outline-secondary w-100 mt-2">
+                                    <i class="bi bi-x-circle"></i> Réinitialiser tous les filtres
+                                </a>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content with Products -->
+            <div class="col-md-9">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for produit in produits %}
+                        <div class="col">
+                            <div class="card h-100 position-relative">
+                                {% if produit.idP in topVentesIds %}
+                                    <span class="badge bg-danger position-absolute" style="top: 10px; left: 10px; z-index: 10; font-size: 1rem; padding: 0.5em 1em;">TOP VENTES</span>
+                                {% endif %}
+                                {% if produit.imagePath %}
+                                    <img src="{{ asset('uploads/products/' ~ produit.imagePath) }}" 
+                                         class="card-img-top" 
+                                         alt="{{ produit.nomP }}"
+                                         style="height: 200px; object-fit: cover;">
+                                {% else %}
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                        <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ produit.nomP }}</h5>
+                                    <p class="card-text">
+                                        <strong>Prix:</strong> {{ produit.prixP }} €<br>
+                                        <strong>Catégorie:</strong> {{ produit.categorieP }}
+                                    </p>
+                                    <button type="button" class="btn btn-info mb-2 w-100" data-bs-toggle="modal" data-bs-target="#productModal{{ produit.idP }}">
+                                        <i class="bi bi-eye"></i> Voir les détails
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal for product {{ produit.idP }} -->
+                        <div class="modal fade" id="productModal{{ produit.idP }}" tabindex="-1" aria-labelledby="productModalLabel{{ produit.idP }}" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="productModalLabel{{ produit.idP }}">{{ produit.nomP }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                {% if produit.imagePath %}
+                                                    <img src="{{ asset('uploads/products/' ~ produit.imagePath) }}" 
+                                                         class="img-fluid rounded" 
+                                                         alt="{{ produit.nomP }}">
+                                                {% else %}
+                                                    <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 300px;">
+                                                        <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h4>Détails du produit</h4>
+                                                <p>
+                                                    <strong>Catégorie:</strong> {{ produit.categorieP }}<br>
+                                                    <strong>Prix:</strong> {{ produit.prixP }} €<br>
+                                                    <strong>Stock disponible:</strong> {{ produit.stockP }} unités
+                                                </p>
+                                                <form action="{{ path('shop_cart_add', {'id': produit.idP}) }}" method="POST" class="mt-4">
+                                                    <div class="input-group mb-3" style="max-width: 200px;">
+                                                        <button class="btn btn-outline-secondary" type="button" onclick="decrementQuantity(this)">-</button>
+                                                        <input type="number" 
+                                                               name="quantity" 
+                                                               value="1" 
+                                                               class="form-control text-center" 
+                                                               oninput="validateQuantity(this, {{ produit.stockP }})"
+                                                               data-max-stock="{{ produit.stockP }}"
+                                                               required>
+                                                        <button class="btn btn-outline-secondary" type="button" onclick="incrementQuantity(this, {{ produit.stockP }})">+</button>
+                                                    </div>
+                                                    <div class="invalid-feedback" style="display: none;"></div>
+                                                    <button type="submit" class="btn btn-primary" id="addToCartBtn{{ produit.idP }}">
+                                                        <i class="bi bi-cart-plus"></i> Ajouter au panier
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucun produit disponible dans cette gamme de prix.
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function validateQuantity(input, maxStock) {
+    let value = parseInt(input.value) || 0;
+    const submitBtn = input.closest('form').querySelector('button[type="submit"]');
+    
+    if (value < 1) {
+        showErrorMessage(input, 'La quantité doit être au moins 1');
+        input.value = '';
+        submitBtn.disabled = true;
+        return false;
+    } else if (value > maxStock) {
+        showErrorMessage(input, `La quantité ne peut pas dépasser ${maxStock} unités`);
+        input.value = maxStock;
+        submitBtn.disabled = false;
+        return false;
+    } else {
+        hideErrorMessage(input);
+        submitBtn.disabled = false;
+        return true;
+    }
+}
+
+function showErrorMessage(input, message) {
+    const errorDiv = input.parentElement.nextElementSibling;
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    input.classList.add('is-invalid');
+}
+
+function hideErrorMessage(input) {
+    const errorDiv = input.parentElement.nextElementSibling;
+    errorDiv.style.display = 'none';
+    input.classList.remove('is-invalid');
+}
+
+function decrementQuantity(button) {
+    const input = button.parentElement.querySelector('input');
+    const currentValue = parseInt(input.value) || 0;
+    const maxStock = parseInt(input.dataset.maxStock);
+    
+    if (currentValue > 1) {
+        input.value = currentValue - 1;
+        validateQuantity(input, maxStock);
+    } else {
+        showErrorMessage(input, 'La quantité doit être au moins 1');
+    }
+}
+
+function incrementQuantity(button, maxStock) {
+    const input = button.parentElement.querySelector('input');
+    const currentValue = parseInt(input.value) || 0;
+    
+    if (currentValue < maxStock) {
+        input.value = currentValue + 1;
+        validateQuantity(input, maxStock);
+    } else {
+        showErrorMessage(input, `La quantité ne peut pas dépasser ${maxStock} unités`);
+    }
+}
+
+// Add form validation
+document.querySelectorAll('form[action*="cart/add"]').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const quantityInput = this.querySelector('input[name="quantity"]');
+        const maxStock = parseInt(quantityInput.dataset.maxStock);
+        
+        if (!validateQuantity(quantityInput, maxStock)) {
+            e.preventDefault();
+        }
+    });
+});
+
+// Prevent non-numeric input
+document.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+    
+    input.addEventListener('keypress', function(e) {
+        if (!/[0-9]/.test(e.key)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %} 

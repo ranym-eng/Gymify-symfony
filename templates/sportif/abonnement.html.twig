@@ -1,0 +1,29 @@
+<div class="progression-section" style="padding: 20px;">
+    <h3 style="color: #FF5722;">Votre progression d'abonnement</h3>
+    {% for abonnementData in sportif.abonnementDatas %}
+        {% set now = "now"|date("U") %}
+        {% set dateDebut = abonnementData.dateDebut|date("U") %}
+        {% set dateFin = abonnementData.dateFin|date("U") %}
+        {% if dateDebut <= now and dateFin >= now %}
+            {% set progression = app.services.get('App\\Service\\ProgressionService').getProgression(abonnementData) %}
+            <div class="progression-card" style="background: #f5f5f5; padding: 15px; border-radius: 10px; margin-bottom: 10px;">
+                <p>Abonnement actif (du {{ abonnementData.dateDebut|date('d/m/Y') }} au {{ abonnementData.dateFin|date('d/m/Y') }})</p>
+                <div class="progress" style="height: 20px; background: #ddd; border-radius: 10px; overflow: hidden;">
+                    <div class="progress-bar" 
+                         style="width: {{ progression.progressionPercentage }}%; 
+                                background: {% if progression.progressionPercentage < 50 %}#ccc{% elseif progression.progressionPercentage < 80 %}#FFC107{% else %}#FF5722{% endif %}; 
+                                transition: width 0.5s ease-in-out; height: 100%;">
+                    </div>
+                </div>
+                <p style="margin-top: 5px;">{{ progression.participationsCount }} / {{ progression.progressionSeuil }} participations</p>
+                {% if progression.hasUnlockedAdvantage %}
+                    <p style="color: #FF5722; font-weight: bold;">Félicitations ! Vous avez débloqué un accès prioritaire à une salle populaire !</p>
+                {% elseif progression.progressionPercentage >= 80 %}
+                    <p style="color: #FF5722;">Vous y êtes presque ! Continuez à participer !</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <p style="color: #FF5722;">Aucun abonnement actif pour le moment.</p>
+    {% endfor %}
+</div>

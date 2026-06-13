@@ -1,0 +1,133 @@
+{% extends 'responsable/homepage_responsable.html.twig' %}
+
+{% block title %}Create New Subscription{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4 animate__animated animate__fadeIn">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="text-gradient mb-1">Create New Subscription</h1>
+            <p class="text-muted">Add a new subscription plan for your members</p>
+        </div>
+        <a href="{{ path('responsable_abonnement_index') }}" class="btn btn-outline-secondary rounded-pill">
+            <i class="fas fa-arrow-left me-2"></i> Back to List
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0"><i class="fas fa-plus-circle text-primary me-2"></i> Subscription Details</h5>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_label(form.type) }}
+                                    <div class="invalid-feedback">
+                                        Please select a subscription type
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form_widget(form.tarif, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_label(form.tarif) }}
+                                    <div class="invalid-feedback">
+                                        Please enter a valid price
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form_widget(form.activite, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_label(form.activite) }}
+                                    <div class="invalid-feedback">
+                                        Please select an activity
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form_widget(form.salle, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_label(form.salle) }}
+                                    <div class="invalid-feedback">
+                                        Please select a location
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
+                            <button type="submit" class="btn btn-primary btn-gradient rounded-pill px-4 py-2 shadow-sm">
+                                <i class="fas fa-save me-2"></i> Create Subscription
+                            </button>
+                            <a href="{{ path('responsable_abonnement_index') }}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                                Cancel
+                            </a>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-gradient {
+        background: linear-gradient(45deg, #3f51b5, #2196f3);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    .btn-gradient {
+        background: linear-gradient(45deg, #3f51b5, #2196f3);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(33, 150, 243, 0.3);
+    }
+    .form-floating label {
+        color: #6c757d;
+    }
+    .form-control {
+        border-radius: 8px;
+        padding: 1rem 0.75rem;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s;
+    }
+    .form-control:focus {
+        border-color: #3f51b5;
+        box-shadow: 0 0 0 0.25rem rgba(63, 81, 181, 0.1);
+    }
+    .invalid-feedback {
+        font-size: 0.875rem;
+    }
+    .card {
+        border-radius: 12px;
+    }
+</style>
+
+<script>
+    // Form validation
+    document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('.needs-validation');
+        
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+</script>
+{% endblock %}

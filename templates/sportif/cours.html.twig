@@ -1,0 +1,210 @@
+{% extends 'sportif/base.html.twig' %}
+
+{% block body %}
+    <!-- Breadcrumb Section Begin -->
+
+    <section class="breadcrumb-section">
+        <div class="page-spacer"></div>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <div class="breadcrumb-text">
+                        <h2>Nos Cours</h2>
+                        <div class="bt-option">
+                            <a href="{{ path('app_home') }}">Accueil</a>
+                            <span>Cours</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Breadcrumb Section End -->
+
+    <!-- Classes Section Begin -->
+    <section class="classes-section spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <span>Découvrez Nos</span>
+                        <h2>COURS DISPONIBLES</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                {% for cours in cours %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="single-class-item">
+                            <div class="ci-pic">
+                                <img src="{{ asset('img/classes/class-' ~ random(1, 6) ~ '.jpg') }}" alt="{{ cours.title }}">
+                            </div>
+                            <div class="ci-text">
+                                <span>{{ cours.objectif ? cours.objectif.label : 'Non défini' }}</span>
+                                <h5>{{ cours.title }}</h5>
+                                <p>{{ cours.description|length > 100 ? cours.description|slice(0, 100) ~ '...' : cours.description }}</p>
+                                <ul class="class-details">
+                                    <li><i class="fa fa-calendar"></i> {{ cours.dateDebut|date('d/m/Y') }}</li>
+                                    <li><i class="fa fa-clock-o"></i> {{ cours.heurDebut|date('H:i') }} - {{ cours.heurFin|date('H:i') }}</li>
+                                    <li><i class="fa fa-user"></i> {{ cours.entaineur ? cours.entaineur.nom : 'TBA' }}</li>
+                                    <li><i class="fa fa-map-marker"></i> {{ cours.salle ? cours.salle.nom : 'Non attribué' }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-lg-12 text-center">
+                        <p>Aucun cours disponible pour le moment.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    <!-- Classes Section End -->
+
+    <!-- Call To Action Section Begin -->
+    <section class="callto-section">
+        <div class="container">
+            <div class="callto-text">
+                <h2>Rejoignez nos cours dès aujourd'hui !</h2>
+                <p>Inscrivez-vous maintenant pour commencer votre transformation avec nos programmes personnalisés.</p>
+            </div>
+        </div>
+    </section>
+    <!-- Call To Action Section End -->
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        /* Breadcrumb Section Styling */
+        .breadcrumb-section {
+            background-color: #000000; /* Set background to black */
+            padding: 100px 0; /* Adjust padding as needed */
+        }
+        .breadcrumb-text h2 {
+            color: #ffffff; /* Keep the main heading white */
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .bt-option a {
+            color: #f36100; /* Set "Accueil" link to orange */
+            font-size: 16px;
+            text-decoration: none;
+        }
+        .bt-option a:hover {
+            color: #d35100; /* Hover color for the link */
+        }
+        .bt-option span {
+            color: #f36100; /* Set "Cours" to orange */
+            font-size: 16px;
+        }
+
+        /* Existing Styles */
+        .single-class-item {
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+        .single-class-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        .ci-pic img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .ci-text {
+            padding: 20px;
+            text-align: center;
+        }
+        .ci-text span {
+            color: #f36100;
+            font-size: 14px;
+            text-transform: uppercase;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .ci-text h5 {
+            font-size: 20px;
+            color: #252525;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .ci-text p {
+            color: #666666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .class-details {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .class-details li {
+            font-size: 14px;
+            color: #666666;
+            margin-bottom: 8px;
+        }
+        .class-details li i {
+            color: #f36100;
+            margin-right: 8px;
+        }
+        .class-btn {
+            display: inline-block;
+            background: #f36100;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .class-btn:hover {
+            background: #d35100;
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .callto-section {
+            background: linear-gradient(90deg, #f36100 0%, #d35100 100%);
+            padding: 60px 0;
+            text-align: center;
+            color: #ffffff;
+        }
+        .callto-text h2 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .callto-text p {
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        .primary-btn {
+            background: #ffffff;
+            color: #f36100;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        .primary-btn:hover {
+            background: #252525;
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .page-spacer {
+    height: 50px;
+    width: 100%;
+    clear: both;
+}
+    </style>
+{% endblock %}

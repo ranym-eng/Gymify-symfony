@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}KaiAdmin - Symfony{% endblock %}</title>
+    
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/fonts.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/demo.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/demo.css.map') }}">
+        <link rel="stylesheet" href="{{ asset('css/kaiadmin.css.map') }}">
+        <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/kaiadmin.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/kaiadmin.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/plugins.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/plugins.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/plugins.css.map') }}">
+
+        <link rel="icon" href="{{ asset('img/favicon.ico') }}" type="image/x-icon">
+
+    {% endblock %}
+    
+    {% block javascripts_head %}
+        <script src="{{ asset('js/webfont.min.js') }}"></script>
+        <script>
+          WebFont.load({
+            google: { families: ["Public Sans:300,400,500,600,700"] },
+            custom: {
+              families: [
+                "Font Awesome 5 Solid",
+                "Font Awesome 5 Regular",
+                "Font Awesome 5 Brands",
+                "simple-line-icons",
+              ],
+              urls: ["{{ asset('css/fonts.min.css') }}"]
+            },
+            active: function() {
+              sessionStorage.fonts = true;
+            }
+          });
+        </script>
+    {% endblock %}
+</head>
+<body>
+    <div class="wrapper">
+        {% include 'entraineur/sidebar.html.twig' %}
+        
+        <div class="main-panel">
+            {% include 'entraineur/navbar.html.twig' %}
+            
+            <div class="container">
+                <div class="page-inner">
+                    {% block body %}{% endblock %}
+                </div>
+            </div>
+            
+            {% include 'entraineur/footer.html.twig' %}
+        </div>
+    </div>
+
+    {% include 'entraineur/scripts.html.twig' %}
+    
+    {% block javascripts %}
+        <script src="{{ asset('js/script.js') }}"></script>
+    {% endblock %}
+</body>
+</html>

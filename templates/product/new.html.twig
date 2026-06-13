@@ -1,0 +1,28 @@
+{% extends 'admin/homepageadmin.html.twig' %}
+
+{% block title %}Nouveau produit{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Créer un nouveau produit</h1>
+
+        {{ form_start(form, {'attr': {'class': 'needs-validation', 'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}}) }}
+            <div class="row">
+                <div class="col-md-6">
+                    {{ form_row(form.nomP) }}
+                    {{ form_row(form.prixP) }}
+                    {{ form_row(form.stockP) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_row(form.categorieP) }}
+                    {{ form_row(form.imageFile) }}
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <a href="{{ path('admin_product_index') }}" class="btn btn-secondary">Retour à la liste</a>
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %} 

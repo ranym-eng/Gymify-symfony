@@ -1,0 +1,180 @@
+{% extends 'entraineur/homepageentraineur.html.twig' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .navbar-form.nav-search { display: none !important; }
+        .navbar-header { justify-content: flex-end !important; }
+        
+        /* Style principal du calendrier */
+        #calendar {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        /* Boutons de navigation améliorés */
+        .fc .fc-toolbar.fc-header-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .fc-button {
+            background-color: #4e73df !important;
+            border: none !important;
+            text-transform: capitalize;
+            border-radius: 6px !important;
+            padding: 8px 16px !important;
+            font-weight: 500 !important;
+            transition: all 0.3s;
+            color: white !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin: 2px !important;
+        }
+        
+        .fc-button:hover {
+            background-color: #2e59d9 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .fc-button-active {
+            background-color: #2e3d4f !important;
+        }
+        
+        /* Titre du calendrier */
+        .fc-toolbar-title {
+            color: #2e3d4f;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 0 10px;
+        }
+        
+        /* Style des événements - Texte en noir */
+        .fc-event,
+        .fc-event .fc-event-title,
+        .fc-event .fc-event-time {
+            color: #000000 !important;
+            font-weight: 500;
+        }
+        
+        .fc-event {
+            border: none !important;
+            padding: 6px 8px !important;
+            margin-bottom: 4px !important;
+            border-radius: 6px !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 3px solid rgba(0,0,0,0.2) !important;
+            cursor: default !important;
+        }
+        
+        .fc-event:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        /* Jour actuel */
+        .fc-day-today {
+            background-color: #f8f9fa !important;
+        }
+        
+        /* En-têtes de colonnes */
+        .fc-col-header-cell {
+            background: #f8f9fa;
+            color: #4e73df;
+            font-weight: 600;
+            padding: 10px 0;
+        }
+        
+        /* Effet de survol */
+        .fc-daygrid-day:hover, .fc-timegrid-col:hover {
+            background-color: #f9f9f9;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                firstDay: 1,
+                navLinks: true,
+                nowIndicator: true,
+                dayMaxEvents: true,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay listWeek'
+                },
+                buttonText: {
+                    today: 'Aujourd\'hui',
+                    month: 'Mois',
+                    week: 'Semaine',
+                    day: 'Jour',
+                    list: 'Liste'
+                },
+                events: {{ events|raw }},
+                editable: false,
+                eventContent: function(info) {
+                    return {
+                        html: `
+                            <div class="d-flex align-items-center" style="color:#000;">
+                                <div style="width:12px; height:12px; background:${info.event.backgroundColor}; 
+                                            border-radius:2px; margin-right:8px;"></div>
+                                <div>
+                                    <div class="fw-bold">${info.event.title}</div>
+                                    <small>${info.timeText}</small>
+                                </div>
+                            </div>
+                        `
+                    };
+                },
+                eventClick: function(info) {
+                    Swal.fire({
+                        title: info.event.title,
+                        html: `
+                            <p><strong>Horaire:</strong> ${info.event.start.toLocaleTimeString()} - ${info.event.end ? info.event.end.toLocaleTimeString() : ''}</p>
+                            <p>${info.event.extendedProps.description || 'Pas de description'}</p>
+                        `,
+                        icon: 'info',
+                        confirmButtonColor: '#4e73df'
+                    });
+                }
+            });
+            calendar.render();
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">{{ page_title }}</h1>
+            <a href="{{ path('google_auth') }}" class="btn btn-success" id="sync-button">
+                <i class="fas fa-sync-alt me-2"></i> Connecter avec Google Calendar
+            </a>
+            <a href="{{ path('import_cours_to_calendar') }}" class="btn btn-success">
+    Importer mes cours dans Google Calendar
+</a>
+
+        </div>
+        
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

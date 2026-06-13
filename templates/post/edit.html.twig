@@ -1,0 +1,602 @@
+{% extends 'sportifdashboard/homepagesportif.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
+    <link rel="stylesheet" href="{{ asset('/css/PostStyle.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+          integrity="sha512-R6HkF9T/5xk6slM7e4rWJZlGJrxO46hKBGG+1ZC43nlGQskM3Qj8Zc+V9OeGmFUyPNKO6kVoZ8iI2EN9MdXYUg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+          
+    <style>
+        /* Spinner styles */
+        .spinner-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 1000;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .audio-file-input {
+            display: none;
+        }
+        
+        /* Toast notification */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: #333;
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+            max-width: 80%;
+            word-break: break-word;
+        }
+        
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .toast-notification.success {
+            background-color: #28a745;
+        }
+        
+        .toast-notification.error {
+            background-color: #dc3545;
+        }
+        
+        .toast-notification.info {
+            background-color: #17a2b8;
+        }
+        
+        /* Debug panel */
+        .debug-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9000;
+            display: none;
+        }
+        
+        .debug-panel.visible {
+            display: block;
+        }
+        
+        .debug-toggle {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 9999;
+            width: 30px;
+            height: 30px;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .debug-content {
+            background-color: rgba(0,0,0,0.8);
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            width: 300px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .debug-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .debug-btn {
+            font-size: 12px;
+            padding: 3px 8px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-5 px-4">
+    <h2 class="mb-4 post-title-animated">EDIT POST</h2>
+
+    {{ form_start(form, {
+        'attr': {'data-parsley-validate': '', 'enctype': 'multipart/form-data'}
+    }) }}
+
+    {# ========== TITLE ========== #}
+    <div class="mb-4">
+        {{ form_label(form.title, 'Title <span class="text-danger">*</span>', {
+            'label_attr': {'class': 'form-label'},
+            'label_html': true
+        }) }}
+        {{ form_widget(form.title, {
+            'attr': {
+                'class': 'form-control',
+                'data-parsley-trigger': 'keyup',
+                'data-parsley-minlength': '3',
+                'data-parsley-minlength-message': 'Le titre doit contenir au moins 3 caractères.'
+            }
+        }) }}
+        <div class="text-danger">{{ form_errors(form.title) }}</div>
+    </div>
+
+    {# ========== ROW DROPZONE + CONTENT ========== #}
+    <div class="row align-items-start">
+        {# -- Colonne gauche -- #}
+        <div class="col-lg-6">
+            <div class="mb-4">
+                <label class="form-label d-block">Image</label>
+                <div id="dropzone"
+                     class="dropzone"
+                     data-existing="{{ existingImage ? existingImage : '' }}">
+                     <i class="fas fa-cloud-upload-alt fa-3x dropzone-icon" style="color: #74C0FC;"></i>
+                </div>
+            </div>
+            <div class="mb-4">
+                {{ form_label(form.webImage, "Url", {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.webImage, {
+                    'attr': {
+                        'class': 'form-control',
+                        'placeholder': "Choose url or drop file"
+                    }
+                }) }}
+                <div class="text-danger">{{ form_errors(form.webImage) }}</div>
+            </div>
+            <div style="display:none">{{ form_row(form.imageFile) }}</div>
+        </div>
+
+        {# -- Colonne droite -- #}
+        <div class="col-lg-6">
+            <div class="mb-4 position-relative">
+                {{ form_label(form.content, 'Content <span class="text-danger">*</span>', {
+                    'label_attr': {'class': 'form-label'},
+                    'label_html': true
+                }) }}
+                {{ form_widget(form.content, {
+                    'attr': {
+                        'class': 'form-control',
+                        'id': 'post_content',
+                        'data-parsley-trigger': 'keyup',
+                        'data-parsley-cleancontent': '',
+                        'data-parsley-forbiddenwords': ''
+                    }
+                }) }}
+                <div class="text-danger">{{ form_errors(form.content) }}</div>
+                
+                <!-- Spinner (hidden by default) -->
+                <div id="spinner-container" class="spinner-container" style="display: none;">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            
+            <!-- Audio file input (hidden) -->
+            <input type="file" id="audioFileInput" class="audio-file-input" accept="audio/*" />
+            
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <button type="button" id="speechToTextBtn" class="btn btn-warning speech-btn">
+                    <i class="fas fa-microphone"></i> Try our ai speech to text
+                </button>
+                
+                <span id="directUploadToggle" class="text-muted" style="cursor: pointer; font-size: 0.8rem;">
+                    <i class="fas fa-cog"></i> Direct upload: <span id="directUploadStatus">Off</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hstack gap-2 justify-content-center mb-3">
+        <button class="btn btn-primary">Update</button>
+    </div>
+
+    {{ form_end(form) }}
+    
+    <!-- Toast notification container -->
+    <div id="toast" class="toast-notification">
+        <span id="toast-message"></span>
+    </div>
+    
+    <!-- Debug panel toggle -->
+    <div class="debug-toggle" id="debugToggle">
+        <i class="fas fa-bug"></i>
+    </div>
+    
+    <!-- Debug panel -->
+    <div class="debug-panel" id="debugPanel">
+        <div class="debug-content" id="debugContent">
+            <div>Speech to Text Debug Panel</div>
+        </div>
+        <div class="debug-actions">
+            <button class="btn btn-sm btn-info debug-btn" id="testApiBtn">Test API Connection</button>
+            <button class="btn btn-sm btn-warning debug-btn" id="clearDebugBtn">Clear</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/parsley.js/2.9.2/parsley.min.js" crossorigin="anonymous"></script>
+    <script>
+        Dropzone.autoDiscover = false;
+
+        const webImageInput = document.querySelector('input[name="post[webImage]"]');
+        const fileInput = document.querySelector('input[name="post[imageFile]"]');
+        const formElt = document.querySelector('form[data-parsley-validate]');
+        const uploadIcon = document.querySelector('.dropzone-icon');
+
+        const myDropzone = new Dropzone("#dropzone", {
+            url: "#",
+            autoProcessQueue: false,
+            clickable: "#dropzone",
+            maxFiles: 1,
+            acceptedFiles: 'image/*',
+            addRemoveLinks: true,
+            init: function() {
+                const dz = this;
+                const existing = dz.element.dataset.existing;
+            
+                if (existing) {
+                    // Si c'est une URL distante, on la met dans le champ et on désactive le dropzone
+                    if (/^https?:\/\//.test(existing)) {
+                        webImageInput.value = existing;
+                        uploadIcon.style.display = 'none';
+                        
+                        // Simulate a file display for the URL
+                        const filename = existing.split('/').pop();
+                        const mockFile = { name: filename, size: 12345, accepted: true };
+                        
+                        dz.emit("addedfile", mockFile);
+                        dz.emit("complete", mockFile);
+                        
+                        // Create thumbnail from URL
+                        dz.createThumbnailFromUrl(
+                            mockFile,
+                            existing,
+                            dz.options.thumbnailWidth,
+                            dz.options.thumbnailHeight,
+                            false,
+                            (thumbnailUrl) => dz.emit("thumbnail", mockFile, thumbnailUrl)
+                        );
+                        
+                        dz.files.push(mockFile);
+                    }
+                    // Sinon, pour un fichier déjà uploadé côté serveur
+                    else {
+                        webImageInput.value = '';
+                        uploadIcon.style.display = 'none';
+            
+                        const filename = existing.split('/').pop();
+                        // MockFile minimal
+                        const mockFile = { name: filename, size: 12345, accepted: true };
+            
+                        // Ajout à l'UI
+                        dz.emit("addedfile", mockFile);
+                        dz.emit("complete", mockFile);
+            
+                        // Création de la vignette à partir de l'URL publique
+                        dz.createThumbnailFromUrl(
+                            mockFile,
+                            existing,
+                            dz.options.thumbnailWidth,
+                            dz.options.thumbnailHeight,
+                            false,
+                            (thumbnailUrl) => dz.emit("thumbnail", mockFile, thumbnailUrl)
+                        );
+            
+                        dz.files.push(mockFile);
+                    }
+                }
+                
+                // === handlers classiques ===
+                dz.on("addedfile", file => {
+                    if (webImageInput.value.trim()) {
+                        dz.removeFile(file);
+                        return alert('Vous avez déjà saisi une URL. Choisissez soit un fichier, soit une URL.');
+                    }
+                    webImageInput.value = '';
+                    webImageInput.readOnly = true;
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    fileInput.files = dt.files;
+                    uploadIcon.style.display = 'none';
+                });
+            
+                dz.on("removedfile", () => {
+                    fileInput.value = "";
+                    webImageInput.readOnly = false;
+                    uploadIcon.style.display = 'block';
+                });
+            }
+        });
+
+        webImageInput.addEventListener('input', function () {
+            if (this.value.trim() !== '') {
+                if (myDropzone.files.length) myDropzone.removeAllFiles(true);
+                fileInput.value = '';
+            }
+        });
+
+        // CKEditor
+        const editor = CKEDITOR.replace('post_content', {
+            allowedContent: true,
+            removePlugins: 'elementspath',
+            height: 300,
+            on: {
+                change: () => {
+                    editor.updateElement();
+                    document.getElementById('post_content').dispatchEvent(new Event('input'));
+                }
+            }
+        });
+
+        // Parsley validators
+        window.Parsley.addValidator('cleancontent', {
+            validateString: () => {
+                const text = editor.getData().replace(/<[^>]*>/g, ' ').trim();
+                return text.length >= 10;
+            },
+            messages: { fr: 'Le contenu doit contenir au moins 10 caractères (sans HTML).' }
+        });
+        window.Parsley.addValidator('forbiddenwords', {
+            validateString: () => {
+                const text = editor.getData().toLowerCase();
+                const bad = ['spam','arnaque','insulte'];
+                return !bad.some(w => text.includes(w));
+            },
+            messages: { fr: 'Le contenu contient des mots interdits.' }
+        });
+
+        formElt.addEventListener('submit', e => {
+            editor.updateElement();
+            const text = editor.getData().replace(/<[^>]*>/g, ' ').trim();
+            if (text.length < 10) {
+                e.preventDefault();
+                document.getElementById('post_content').parsley().reset().validate();
+                return;
+            }
+            
+            // Validate that the user isn't trying to select both a file and a URL
+            if (webImageInput.value.trim() !== '' && fileInput.files.length) {
+                e.preventDefault();
+                alert('Veuillez choisir soit une URL, soit un fichier, pas les deux.');
+            }
+        });
+        
+        // CKEditor frame styling
+        const ckeFrame = document.querySelector('.cke_chrome');
+        if (ckeFrame) {
+            ckeFrame.addEventListener('focusin', () => {
+                ckeFrame.style.boxShadow = '0 0 5px rgba(0, 123, 255, 0.8)';
+                ckeFrame.style.borderColor = '#007bff';
+            });
+        
+            ckeFrame.addEventListener('focusout', () => {
+                ckeFrame.style.boxShadow = 'none';
+                ckeFrame.style.borderColor = '#ced4da';
+            });
+        }
+        
+        // Speech to Text functionality
+        const speechToTextBtn = document.getElementById('speechToTextBtn');
+        const audioFileInput = document.getElementById('audioFileInput');
+        const spinnerContainer = document.getElementById('spinner-container');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        
+        // Debug panel elements
+        const debugToggle = document.getElementById('debugToggle');
+        const debugPanel = document.getElementById('debugPanel');
+        const debugContent = document.getElementById('debugContent');
+        const testApiBtn = document.getElementById('testApiBtn');
+        const clearDebugBtn = document.getElementById('clearDebugBtn');
+        
+        // Debug logging
+        function debugLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: ${type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#339af0'}">[${timestamp}]</span> ${message}`;
+            debugContent.appendChild(logEntry);
+            debugContent.scrollTop = debugContent.scrollHeight;
+        }
+        
+        // Toggle debug panel
+        debugToggle.addEventListener('click', () => {
+            debugPanel.classList.toggle('visible');
+        });
+        
+        // Clear debug panel
+        clearDebugBtn.addEventListener('click', () => {
+            debugContent.innerHTML = '<div>Speech to Text Debug Panel</div>';
+        });
+        
+        // Test API connection
+        testApiBtn.addEventListener('click', () => {
+            debugLog('Testing API connection...');
+            
+            fetch('/speech-to-text/test-connection')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        debugLog(`API connection successful. ${data.availableModels} models available.`, 'success');
+                        debugLog(`API Key: ${data.credentials.apiKey}`, 'success');
+                        debugLog(`Service URL: ${data.credentials.serviceUrl}`, 'success');
+                    } else {
+                        debugLog(`API connection failed: ${data.error}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    debugLog(`Error testing API: ${error.message}`, 'error');
+                });
+        });
+        
+        // Show a toast notification
+        function showToast(message, type = 'info') {
+            toastMessage.textContent = message;
+            toast.className = 'toast-notification show ' + type;
+            
+            // Also log to debug panel
+            debugLog(message, type);
+            
+            setTimeout(() => {
+                toast.className = 'toast-notification';
+            }, 5000);
+        }
+        
+        // Handle speech to text button click
+        speechToTextBtn.addEventListener('click', () => {
+            audioFileInput.click();
+        });
+        
+        // Handle audio file selection
+        audioFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            
+            if (!file) return;
+            
+            // Validate file type
+            const validTypes = ['audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/ogg', 
+                              'audio/flac', 'audio/webm', 'audio/x-m4a', 'audio/mp4'];
+            
+            debugLog(`Selected file: ${file.name} (${file.type}, ${Math.round(file.size / 1024)} KB)`);
+            
+            if (!validTypes.includes(file.type)) {
+                showToast('Please select a valid audio file (WAV, MP3, OGG, FLAC, WEBM, M4A)', 'error');
+                debugLog(`Invalid file type: ${file.type}`, 'error');
+                return;
+            }
+            
+            // Show spinner
+            spinnerContainer.style.display = 'flex';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('audio_file', file);
+            
+            // Show a toast with the status
+            showToast(`Processing ${file.name} (${Math.round(file.size / 1024)} KB)...`, 'info');
+            
+            // Determine which endpoint to use
+            const useDirectUpload = localStorage.getItem('useDirectUpload') === 'true';
+            const endpoint = useDirectUpload ? '/direct_upload.php' : '/speech-to-text';
+            
+            // Send to server
+            debugLog(`Sending file to server using ${useDirectUpload ? 'direct' : 'Symfony'} endpoint...`);
+            fetch(endpoint, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                debugLog(`Server response status: ${response.status}`);
+                
+                // Check content type
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    debugLog(`Unexpected content type: ${contentType}`, 'error');
+                    return response.text().then(text => {
+                        debugLog(`Raw response: ${text.substring(0, 200)}...`, 'error');
+                        throw new Error("Server returned HTML instead of JSON. Check server logs for details.");
+                    });
+                }
+                
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                } else {
+                    // Direct upload returns different structure
+                    const transcription = data.transcription || (data.success ? data.transcription : null);
+                    
+                    if (!transcription) {
+                        throw new Error("No transcription found in response");
+                    }
+                    
+                    debugLog(`Transcription received: ${transcription.substring(0, 50)}...`, 'success');
+                    
+                    // Get current editor content
+                    const currentContent = editor.getData();
+                    
+                    // Append the new transcription
+                    if (currentContent) {
+                        editor.setData(currentContent + '<p>' + transcription + '</p>');
+                    } else {
+                        editor.setData('<p>' + transcription + '</p>');
+                    }
+                    
+                    showToast('Transcription completed successfully!', 'success');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                debugLog(`Error: ${error.message}`, 'error');
+                showToast('Error: ' + error.message, 'error');
+                
+                // If using Symfony endpoint and failed, suggest direct upload
+                if (!useDirectUpload) {
+                    setTimeout(() => {
+                        showToast('Try using direct upload mode for better compatibility', 'info');
+                    }, 2000);
+                }
+            })
+            .finally(() => {
+                // Hide spinner
+                spinnerContainer.style.display = 'none';
+                
+                // Reset file input
+                audioFileInput.value = '';
+            });
+        });
+
+        // Add code for the direct upload toggle
+        const directUploadToggle = document.getElementById('directUploadToggle');
+        const directUploadStatus = document.getElementById('directUploadStatus');
+
+        // Initialize from localStorage or default to false
+        let useDirectUpload = localStorage.getItem('useDirectUpload') === 'true';
+        directUploadStatus.textContent = useDirectUpload ? 'On' : 'Off';
+
+        directUploadToggle.addEventListener('click', () => {
+            useDirectUpload = !useDirectUpload;
+            localStorage.setItem('useDirectUpload', useDirectUpload);
+            directUploadStatus.textContent = useDirectUpload ? 'On' : 'Off';
+            showToast(`Direct upload mode ${useDirectUpload ? 'enabled' : 'disabled'}`, 'info');
+        });
+    </script>
+{% endblock %}

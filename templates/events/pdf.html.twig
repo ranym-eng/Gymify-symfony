@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Events List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #3f51b5;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #3f51b5;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        img {
+            max-width: 80px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Events List</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Reward</th>
+                <th>Description</th>
+                <th>Location</th>
+                <th>Coordinates</th>
+                <th>Image</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+                <tr>
+                    <td>{{ event.nom|default('Untitled Event') }}</td>
+                    <td>{{ event.date ? event.date|date('F j, Y') : 'N/A' }}</td>
+                    <td>{{ event.heureDebut ? event.heureDebut|date('H:i') : 'N/A' }} - {{ event.heureFin ? event.heureFin|date('H:i') : 'N/A' }}</td>
+                    <td>{{ event.type ? event.type.value|capitalize : 'N/A' }}</td>
+                    <td>{{ event.reward ? event.reward.value|capitalize : 'N/A' }}</td>
+                    <td>{{ event.description|default('N/A') }}</td>
+                    <td>{{ event.lieu|default('Not specified') }}</td>
+                    <td>{{ event.latitude|default('N/A') }}, {{ event.longitude|default('N/A') }}</td>
+                    <td>
+                        {% if event.imageUrl %}
+                            <img src="{{ absolute_url(event.imageUrl) }}" alt="{{ event.nom|default('Event') }}">
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

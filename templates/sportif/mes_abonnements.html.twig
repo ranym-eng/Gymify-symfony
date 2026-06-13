@@ -1,0 +1,354 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Abonnements{% endblock %}
+
+{% block body %}
+    <section class="abonnements-section spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <span>Votre Historique</span>
+                        <h2>Mes Abonnements</h2>
+                    </div>
+                </div>
+            </div>
+
+            {% if paiements|length > 0 %}
+                <div class="row abonnements-list">
+                    {% for paiement in paiements %}
+                        {% set isActive = paiement.dateFin >= "now"|date("U") %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="abonnement-card {% if isActive %}active{% else %}expired{% endif %}" 
+                                 role="region" 
+                                 aria-labelledby="abonnement-{{ paiement.id }}">
+                                <div class="abonnement-header">
+                                    <h3 id="abonnement-{{ paiement.id }}">
+                                        {{ paiement.abonnement ? paiement.abonnement.type.value|capitalize : 'N/A' }}
+                                    </h3>
+                                    <span class="status-indicator {{ isActive ? 'active' : 'expired' }}">
+                                        {{ isActive ? 'Actif' : 'Expiré' }}
+                                    </span>
+                                </div>
+                                <div class="abonnement-body">
+                                    <ul class="abonnement-details">
+                                        <li>
+                                            <i class="fas fa-dumbbell"></i>
+                                            Activité: {{ paiement.abonnement and paiement.abonnement.activite ? paiement.abonnement.activite.nom : 'N/A' }}
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            Salle: {{ paiement.abonnement and paiement.abonnement.salle ? paiement.abonnement.salle.nom : 'N/A' }}
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-coins"></i>
+                                            Montant: {{ paiement.amount }} {{ paiement.currency|upper }}
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-calendar-alt"></i>
+                                            Début: {{ paiement.dateDebut|date('d/m/Y') }}
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-calendar-times"></i>
+                                            Fin: {{ paiement.dateFin|date('d/m/Y') }}
+                                        </li>
+                                    </ul>
+                                    {% if paiement.abonnement and isActive == false %}
+                                        <a href="{{ path('sportif_salle_details', {'id': paiement.abonnement.salle.id}) }}#subscriptions"
+                                           class="renew-btn"
+                                           data-tooltip="Renouveler cet abonnement"
+                                           aria-label="Renouveler l'abonnement {{ paiement.abonnement.type.value|capitalize }}">
+                                            Renouveler
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="row">
+                    <div class="col-lg-12 text-center">
+                        <p class="no-abonnements">
+                            Vous n'avez aucun abonnement actif. 
+                            <a href="{{ path('home') }}" class="explore-link">Explorer les salles</a>
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Abonnements Section */
+        .abonnements-section {
+            padding: 100px 0;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+        }
+        .abonnements-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/subtle-white-feathers.png');
+            opacity: 0.05;
+            z-index: 0;
+        }
+        .section-title {
+            text-align: center;
+            margin-bottom: 70px;
+            position: relative;
+            z-index: 1;
+        }
+        .section-title span {
+            font-family: 'Oswald', sans-serif;
+            font-size: 20px;
+            font-weight: 500;
+            color: #f36100;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            display: block;
+            margin-bottom: 15px;
+        }
+        .section-title h2 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 5px;
+            background: linear-gradient(90deg, #f36100, #ff8c00);
+            border-radius: 3px;
+        }
+
+        /* Abonnement Card */
+        .abonnement-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            transition: all 0.4s ease;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-in-out;
+            position: relative;
+            z-index: 1;
+        }
+        .abonnement-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        .abonnement-card.active {
+            border: 2px solid #10B981;
+        }
+        .abonnement-card.expired {
+            border: 2px solid #EF4444;
+            opacity: 0.9;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Abonnement Header */
+        .abonnement-header {
+            padding: 20px;
+            background: linear-gradient(90deg, #f36100, #ff8c00);
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .abonnement-header h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        .status-indicator {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-family: 'Muli', sans-serif;
+        }
+        .status-indicator.active {
+            background: #10B981;
+            color: #ffffff;
+        }
+        .status-indicator.expired {
+            background: #EF4444;
+            color: #ffffff;
+        }
+
+        /* Abonnement Body */
+        .abonnement-body {
+            padding: 25px;
+        }
+        .abonnement-details {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .abonnement-details li {
+            font-size: 15px;
+            color: #333333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            font-family: 'Muli', sans-serif;
+        }
+        .abonnement-details li i {
+            color: #f36100;
+            margin-right: 12px;
+            font-size: 18px;
+            transition: color 0.3s ease;
+        }
+        .abonnement-details li:hover i {
+            color: #ff8c00;
+        }
+
+        /* Renew Button */
+        .renew-btn {
+            display: block;
+            background: linear-gradient(90deg, #f36100, #ff8c00);
+            color: #ffffff;
+            padding: 12px 18px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            font-size: 15px;
+            font-weight: 700;
+            text-align: center;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            font-family: 'Oswald', sans-serif;
+            box-shadow: 0 6px 15px rgba(243, 97, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .renew-btn:hover {
+            background: linear-gradient(90deg, #ff8c00, #f36100);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(243, 97, 0, 0.4);
+        }
+        .renew-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        .renew-btn:hover::before {
+            left: 100%;
+        }
+        .renew-btn[data-tooltip] {
+            position: relative;
+        }
+        .renew-btn[data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Muli', sans-serif;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+        .renew-btn[data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* No Abonnements Message */
+        .no-abonnements {
+            font-size: 18px;
+            color: #6B7280;
+            font-family: 'Muli', sans-serif;
+            margin: 40px 0;
+        }
+        .explore-link {
+            color: #f36100;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        .explore-link:hover {
+            color: #ff8c00;
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .section-title h2 {
+                font-size: 40px;
+            }
+            .abonnement-card {
+                animation: none;
+            }
+        }
+        @media (max-width: 768px) {
+            .abonnements-section {
+                padding: 80px 0;
+            }
+            .section-title h2 {
+                font-size: 36px;
+            }
+            .abonnement-header h3 {
+                font-size: 20px;
+            }
+            .renew-btn {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+        @media (max-width: 576px) {
+            .section-title h2 {
+                font-size: 32px;
+            }
+            .abonnement-header h3 {
+                font-size: 18px;
+            }
+            .abonnement-details li {
+                font-size: 14px;
+            }
+            .renew-btn {
+                width: 100%;
+                text-align: center;
+            }
+            .status-indicator {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+        }
+    </style>
+{% endblock %}

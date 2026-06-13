@@ -1,0 +1,185 @@
+{% extends 'entraineur/homepageentraineur.html.twig' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .icon-planning {
+            transition: transform 0.3s ease;
+        }
+        .card:hover .icon-planning {
+            transform: scale(1.1);
+        }
+        .date-box {
+            min-width: 100px;
+            transition: all 0.3s ease;
+        }
+        .date-box:hover {
+            background: rgba(58, 123, 213, 0.1) !important;
+        }
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .rounded-4 {
+            border-radius: 1rem !important;
+        }
+        .icon-planning-empty {
+            opacity: 0.5;
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+        <div>
+            <h3 class="fw-bold mb-3">{{ page_title }}</h3>
+            <h6 class="op-7 mb-2">Planning Monitoring Dashboard</h6>
+        </div>
+        <div class="ms-md-auto py-2 py-md-0 d-flex gap-2">
+            <a href="{{ path('app_planning_new') }}" class="btn btn-primary btn-round">
+                <i class="fas fa-plus me-2"></i> Add Planning
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for planning in plannings %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="card-title text-center fw-bold text-dark mb-3">{{ planning.title }}</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="icon-wrapper mb-4">
+                        <div class="icon-planning bg-soft-primary rounded-3 p-4 d-inline-block">
+                            <i class="fas fa-calendar-alt fa-3x text-primary"></i>
+                        </div>
+                    </div>
+                    
+                    <p class="card-text text-muted mb-4">
+                        {{ planning.description|default('Aucune description') }}
+                    </p>
+                    
+                    <div class="date-container d-flex justify-content-center gap-3 mb-4">
+                        <div class="date-box bg-light rounded-3 p-3 text-center">
+                            <small class="text-muted d-block">Début</small>
+                            <span class="fw-bold text-dark">{{ planning.dateDebut|date('d/m/Y') }}</span>
+                        </div>
+                        <div class="date-box bg-light rounded-3 p-3 text-center">
+                            <small class="text-muted d-block">Fin</small>
+                            <span class="fw-bold text-dark">{{ planning.dateFin|date('d/m/Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 pt-0">
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="{{ path('app_planning_edit', {'id': planning.id}) }}" 
+                           class="btn btn-icon btn-outline-primary rounded-circle"
+                           title="Modifier">
+                            <i class="fas fa-pen"></i>
+                        </a>
+                        
+                        <form method="post" action="{{ path('app_planning_delete', {'id': planning.id}) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ planning.id) }}">
+                            <button type="submit" class="btn btn-icon btn-outline-danger rounded-circle delete-btn"
+                                    title="Supprimer"
+                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce planning ?');">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                        
+                        <a href="{{path('app_cours', {'idPlanning': planning.id})}}" class="btn btn-icon btn-outline-secondary rounded-circle"
+                           title="Liste cours">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body text-center py-5">
+                    <div class="icon-planning-empty mb-4">
+                        <i class="fas fa-calendar-plus fa-4x text-muted"></i>
+                    </div>
+                    <h5 class="text-dark mb-2">Aucun planning disponible</h5>
+                    <p class="text-muted mb-4">Commencez par créer votre premier planning</p>
+                    <a href="{{ path('app_planning_new') }}" class="btn btn-primary rounded-pill px-4">
+                        <i class="fas fa-plus me-2"></i> Créer un planning
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- SweetAlert2 pour les belles alertes -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion de la suppression avec SweetAlert2
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const form = this.closest('form');
+                    
+                    Swal.fire({
+                        title: 'Confirmer la suppression',
+                        html: 'Êtes-vous sûr de vouloir supprimer ce planning ?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Oui, supprimer !',
+                        cancelButtonText: 'Annuler',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+            
+            // Recherche en temps réel
+            const searchInput = document.getElementById('globalSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const planningCards = document.querySelectorAll('.col-md-4.mb-4');
+                    
+                    planningCards.forEach(card => {
+                        const title = card.querySelector('.card-title').textContent.toLowerCase();
+                        card.style.display = title.includes(searchTerm) ? 'block' : 'none';
+                    });
+                    
+                    const visibleCards = document.querySelectorAll('.col-md-4.mb-4[style="display: block;"]');
+                    const emptyState = document.querySelector('.col-12 .card');
+                    
+                    if (visibleCards.length === 0 && searchTerm.length > 0) {
+                        emptyState.style.display = 'block';
+                        emptyState.querySelector('h5').textContent = 'Aucun planning trouvé';
+                        emptyState.querySelector('p').textContent = 'Aucun résultat pour "' + searchTerm + '"';
+                    } else {
+                        emptyState.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

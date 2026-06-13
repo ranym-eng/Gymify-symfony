@@ -1,0 +1,68 @@
+<div class="sidebar" data-background-color="dark">
+    <div class="sidebar-logo">
+        <div class="logo-header" data-background-color="dark">
+            <a href="{{ path('app_responsable_home') }}" class="logo">
+                <img src="{{ asset('img/logocopy.png') }}" alt="Logo" class="navbar-brand" width="180" height="100">
+            </a>
+            <div class="nav-toggle">
+                <button class="btn btn-toggle toggle-sidebar">
+                    <i class="gg-menu-right"></i>
+                </button>
+                <button class="btn btn-toggle sidenav-toggler">
+                    <i class="gg-menu-left"></i>
+                </button>
+            </div>
+            <button class="topbar-toggler more">
+                <i class="gg-more-vertical-alt"></i>
+            </button>
+        </div>
+    </div>
+    <div class="sidebar-wrapper scrollbar scrollbar-inner">
+        <div class="sidebar-content">
+            <ul class="nav nav-secondary">
+                <li class="nav-item {{ app.request.get('_route') == 'app_responsable_dashboard' ? 'active' : '' }}">
+                    <a href="{{ path('app_responsable_dashboard') }}">
+                        <i class="fas fa-home"></i>
+                        <p>Dashboard</p>
+                    </a>
+                </li>
+                               <li class="nav-item">
+                    <a href="{{ path('responsable_user_index') }}" class="nav-link">
+                        <i class="fas fa-dumbbell"></i>
+                        <p>user</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_responsable_mygym') }}" class="nav-link">
+                        <i class="fas fa-dumbbell"></i>
+                        <p>My Gym</p>
+                    </a>
+                </li>
+                <li class="nav-item {{ app.request.get('_route') == 'app_events_index' ? 'active' : '' }}">
+                    <a href="{{ path('app_events_index') }}">
+                        <i class="fas fa-calendar-alt"></i>
+                        <p>Events</p>
+                    </a>
+                </li>
+                <li class="nav-item {{ app.request.get('_route') == 'app_equipe_index' ? 'active' : '' }}">
+                    <a href="{{ path('app_equipe_index') }}">
+                        <i class="fas fa-users"></i>
+                        <p>Teams</p>
+                    </a>
+                </li>
+                <li class="nav-item {{ app.request.get('_route') == 'app_equipe_event' ? 'active' : '' }}">
+                    <a href="{{ path('app_equipe_event') }}">
+                        <i class="fas fa-link"></i>
+                        <p>Teams Events</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('responsable_abonnement_index') }}" class="nav-link">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span>Subscriptions</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

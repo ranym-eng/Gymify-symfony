@@ -1,0 +1,42 @@
+<div class="sidebar" data-background-color="dark">
+    <div class="sidebar-logo">
+        <div class="logo-header" data-background-color="blue">
+            <a href="{{ path('app_home') }}" class="logo">
+                <img src="{{ asset('img/kaiadmin/logo_light.svg') }}" alt="Logo" class="navbar-brand" height="20">
+            </a>
+            <div class="nav-toggle">
+                <button class="btn btn-toggle toggle-sidebar">
+                    <i class="gg-menu-right"></i>
+                </button>
+                <button class="btn btn-toggle sidenav-toggler">
+                    <i class="gg-menu-left"></i>
+                </button>
+            </div>
+            <button class="topbar-toggler more">
+                <i class="gg-more-vertical-alt"></i>
+            </button>
+        </div>
+    </div>
+    <div class="sidebar-wrapper scrollbar scrollbar-inner">
+        <div class="sidebar-content">
+            <ul class="nav nav-secondary">
+                <li class="nav-item {{ app.request.get('_route') == 'app_entraineur' ? 'active' }}">
+                    <a href="{{ path('app_entraineur') }}">
+                        <i class="fas fa-clipboard-list"></i> <!-- Ou remplacez par le SVG -->
+                        <p>Planning</p>
+                    </a>
+                </li>
+                <li class="nav-item {{ app.request.get('_route') == 'app_calendar' ? 'active' }}">
+                    <a href="{{ path('app_calendar') }}">
+                        <i class="fas fa-calendar"></i><!-- Ou remplacez par le SVG -->
+                        <p>Calendrier</p>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</div>
+<style>
+
+</style>

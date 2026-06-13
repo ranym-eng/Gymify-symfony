@@ -1,0 +1,172 @@
+<div class="sidebar" style="background-color: #181a20;">
+  <div class="sidebar-logo">
+        <div class="logo-header" style="background-color: #181a20;">
+            <a href="{{ path('app_home') }}" class="logo">
+                <!--<img src="{{ asset('img/kaiadmin/logo_light.svg') }}" alt="Logo" class="navbar-brand" height="20">-->
+                <h2 style="color: rgb(32, 159, 205);">   G Y M I F Y</h2>
+            </a>
+            <div class="nav-toggle">
+                <button class="btn btn-toggle toggle-sidebar">
+                    <i class="gg-menu-right"></i>
+                </button>
+                <button class="btn btn-toggle sidenav-toggler">
+                    <i class="gg-menu-left"></i>
+                </button>
+            </div>
+            <button class="topbar-toggler more">
+                <i class="gg-more-vertical-alt"></i>
+            </button>
+        </div>
+    </div>
+    <div class="sidebar-wrapper scrollbar scrollbar-inner">
+        <div class="sidebar-content">
+          <ul class="nav nav-secondary">
+            
+            
+            <li class="nav-item">
+              
+              <div class="collapse" id="base">
+
+
+
+                <li class="nav-section">
+                  <span class="sidebar-mini-icon">
+                    <i class="fa fa-ellipsis-h"></i>
+                  </span>
+                  <h4 class="text-section">Blogs</h4>
+                </li>
+
+
+               
+
+                <li class="nav-item">
+                  <a href="{{ path('app_sportif_blogs') }}">
+                    <i class="fas fa-home"></i>
+                    <p>{{ 'blog.all_blogs'|trans }}</p>
+                    <span class="badge badge-warning">4</span>
+                  </a>
+                </li>
+
+
+                <li class="nav-item">
+                    <a href="{{ path('app_sportif_create_post') }}">
+                    <i class="fas fa-plus"></i>
+                    <p>{{ 'blog.add_blog'|trans }}</p>
+                  </a>
+                </li>
+
+
+                <li class="nav-item">
+                  <a href="{{ path('app_sportif_blogs') }}">
+                    <i class="fas fa-comment"></i>
+                    <p>{{ 'blog.my_blogs'|trans }}</p>
+                  </a>
+                </li>
+
+
+                <li class="nav-item">
+                  <a href="{{ path('app_sportif_statistics') }}">
+                    <i class="fas fa-chart-line"></i>
+                    <p>{{ 'stats.global_stats'|trans }}</p>
+                  </a>
+                </li>
+
+                <li class="nav-item">
+                  <a href="{{ path('app_sportif_my_statistics') }}">
+                    <i class="fas fa-chart-pie"></i>
+                    <p>{{ 'stats.my_stats'|trans }}</p>
+                  </a>
+                </li>
+
+                
+                <!-- Séparateur pour les paramètres -->
+                <li class="nav-section mt-3">
+                  <span class="sidebar-mini-icon">
+                    <i class="fa fa-ellipsis-h"></i>
+                  </span>
+                  <h4 class="text-section">{{ 'sidebar.settings'|trans }}</h4>
+                </li>
+                
+
+
+
+
+
+
+
+
+
+           
+
+
+
+                <!-- Sélecteur de langue -->
+                <li class="nav-item dropdown">
+                  <a data-bs-toggle="dropdown" href="#" class="dropdown-toggle" aria-expanded="false">
+                    <i class="fas fa-language"></i>
+                    <p>{{ 'sidebar.language'|trans }}</p>
+                    <span class="caret"></span>
+                  </a>
+                  <div class="dropdown-menu">
+                    <a class="dropdown-item {% if app.request.locale == 'fr' %}active{% endif %}" href="{{ path('app_change_language', {'locale': 'fr'}) }}">
+                      <i class="flag-icon flag-icon-fr"></i> Français
+                    </a>
+                    <a class="dropdown-item {% if app.request.locale == 'en' %}active{% endif %}" href="{{ path('app_change_language', {'locale': 'en'}) }}">
+                      <i class="flag-icon flag-icon-gb"></i> English
+                    </a>
+                    <a class="dropdown-item {% if app.request.locale == 'ar' %}active{% endif %}" href="{{ path('app_change_language', {'locale': 'ar'}) }}">
+                      <i class="flag-icon flag-icon-sa"></i> العربية
+                    </a>
+                  </div>
+                </li>
+                
+                <!-- Déconnexion -->
+                <li class="nav-item">
+                  <a href="{{ path('app_login') }}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <p>{{ 'navbar.logout'|trans }}</p>
+                  </a>
+                </li>
+                  
+                  
+                  
+                  
+                  
+                  
+                </ul>
+              </div>
+            </li>
+            
+
+            </ul>
+          </div>
+          <!--<div class="page-category">Inner page content goes here</div>-->
+        </div>
+      </div>
+</div>
+<style>
+  .dropdown-menu {
+    min-width: 180px;
+    padding: 0.5rem 0;
+  }
+  
+  .dropdown-item {
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .dropdown-item.active {
+    background-color: rgba(32, 159, 205, 0.2);
+  }
+  
+  [dir="rtl"] .dropdown-item i {
+    margin-left: 0.5rem;
+    margin-right: 0;
+  }
+  
+  [dir="ltr"] .dropdown-item i {
+    margin-right: 0.5rem;
+    margin-left: 0;
+  }
+</style>

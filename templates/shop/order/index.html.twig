@@ -1,0 +1,65 @@
+{% extends 'shop/base.html.twig' %}
+
+{% block title %}Mes Commandes{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Mes Commandes</h1>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>N° Commande</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes %}
+                        <tr>
+                            <td>#{{ commande.idC }}</td>
+                            <td>{{ commande.dateC|date('d/m/Y H:i') }}</td>
+                            <td>{{ commande.totalC }} €</td>
+                            <td>
+                                <span class="badge {% if commande.statutC == 'Annulée' %}bg-danger{% elseif commande.statutC == 'Validée' %}bg-success{% else %}bg-warning{% endif %}">
+                                    {{ commande.statutC }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ path('shop_order_show', {'id': commande.idC}) }}" class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i> Détails
+                                </a>
+                                {% if commande.statutC == 'En cours' %}
+                                    <form action="{{ path('shop_order_cancel', {'id': commande.idC}) }}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette commande ?');">
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-x-circle"></i> Annuler
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">Aucune commande trouvée</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %} 

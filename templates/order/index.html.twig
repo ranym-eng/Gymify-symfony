@@ -1,0 +1,62 @@
+{% extends 'admin/homepageadmin.html.twig' %}
+
+{% block title %}Liste des commandes{% endblock %}
+
+{% block body %}
+<div class="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Liste des commandes</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for commande in commandes %}
+                                <tr>
+                                    <td>#{{ commande.idC }}</td>
+                                    <td>{{ commande.dateC|date('d/m/Y H:i') }}</td>
+                                    <td>{{ commande.totalC }} €</td>
+                                    <td>
+                                        <form action="{{ path('admin_order_update', {'id': commande.idC}) }}" method="POST" class="d-inline">
+                                            <select name="statut" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+                                                <option value="En cours" {% if commande.statutC == 'En cours' %}selected{% endif %}>En cours</option>
+                                                <option value="Validée" {% if commande.statutC == 'Validée' %}selected{% endif %}>Validée</option>
+                                                <option value="Annulée" {% if commande.statutC == 'Annulée' %}selected{% endif %}>Annulée</option>
+                                            </select>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ path('admin_order_show', {'id': commande.idC}) }}" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i> Détails
+                                            </a>
+                                            <form action="{{ path('admin_order_delete', {'id': commande.idC}) }}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande ?');">
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-trash"></i> Supprimer
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
