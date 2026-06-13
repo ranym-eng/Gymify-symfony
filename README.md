@@ -304,9 +304,64 @@ Le sportif peut consulter les activités, abonnements, événements, cours et pr
 
 ## Présentation
 
-Vous pouvez consulter la présentation du projet ici :
+Vous pouvez consulter la présentation complète du projet ici :
 
-[Gymify web desktop presentation](Gymify-web-desktop-presentation.pdf)
+[Telecharger la presentation PDF](Gymify-web-desktop-presentation.pdf)
+
+### Slides
+
+![Slide 01](docs/presentation/slide-01.png)
+![Slide 02](docs/presentation/slide-02.png)
+![Slide 03](docs/presentation/slide-03.png)
+![Slide 04](docs/presentation/slide-04.png)
+![Slide 05](docs/presentation/slide-05.png)
+![Slide 06](docs/presentation/slide-06.png)
+![Slide 07](docs/presentation/slide-07.png)
+![Slide 08](docs/presentation/slide-08.png)
+![Slide 09](docs/presentation/slide-09.png)
+![Slide 10](docs/presentation/slide-10.png)
+![Slide 11](docs/presentation/slide-11.png)
+![Slide 12](docs/presentation/slide-12.png)
+![Slide 13](docs/presentation/slide-13.png)
+![Slide 14](docs/presentation/slide-14.png)
+![Slide 15](docs/presentation/slide-15.png)
+![Slide 16](docs/presentation/slide-16.png)
+![Slide 17](docs/presentation/slide-17.png)
+![Slide 18](docs/presentation/slide-18.png)
+![Slide 19](docs/presentation/slide-19.png)
+![Slide 20](docs/presentation/slide-20.png)
+![Slide 21](docs/presentation/slide-21.png)
+![Slide 22](docs/presentation/slide-22.png)
+![Slide 23](docs/presentation/slide-23.png)
+![Slide 24](docs/presentation/slide-24.png)
+![Slide 25](docs/presentation/slide-25.png)
+![Slide 26](docs/presentation/slide-26.png)
+![Slide 27](docs/presentation/slide-27.png)
+![Slide 28](docs/presentation/slide-28.png)
+![Slide 29](docs/presentation/slide-29.png)
+![Slide 30](docs/presentation/slide-30.png)
+![Slide 31](docs/presentation/slide-31.png)
+![Slide 32](docs/presentation/slide-32.png)
+![Slide 33](docs/presentation/slide-33.png)
+![Slide 34](docs/presentation/slide-34.png)
+![Slide 35](docs/presentation/slide-35.png)
+![Slide 36](docs/presentation/slide-36.png)
+![Slide 37](docs/presentation/slide-37.png)
+![Slide 38](docs/presentation/slide-38.png)
+![Slide 39](docs/presentation/slide-39.png)
+![Slide 40](docs/presentation/slide-40.png)
+![Slide 41](docs/presentation/slide-41.png)
+![Slide 42](docs/presentation/slide-42.png)
+![Slide 43](docs/presentation/slide-43.png)
+![Slide 44](docs/presentation/slide-44.png)
+![Slide 45](docs/presentation/slide-45.png)
+![Slide 46](docs/presentation/slide-46.png)
+![Slide 47](docs/presentation/slide-47.png)
+![Slide 48](docs/presentation/slide-48.png)
+![Slide 49](docs/presentation/slide-49.png)
+![Slide 50](docs/presentation/slide-50.png)
+![Slide 51](docs/presentation/slide-51.png)
+![Slide 52](docs/presentation/slide-52.png)
 
 ---
 
